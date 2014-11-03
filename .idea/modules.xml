@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/MPCRemcon.iml" filepath="$PROJECT_DIR$/MPCRemcon.iml" />
-      <module fileurl="file://$PROJECT_DIR$/MyApplication2.iml" filepath="$PROJECT_DIR$/MyApplication2.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/jsoup-1.8.1.jar/jsoup-1.8.1.jar.iml" filepath="$PROJECT_DIR$/jsoup-1.8.1.jar/jsoup-1.8.1.jar.iml" />
     </modules>
