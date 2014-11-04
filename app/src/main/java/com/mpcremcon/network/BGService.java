@@ -20,6 +20,8 @@ import com.mpcremcon.ui.Main;
  */
 public class BGService extends Service {
 
+    public static final int POOLING_WAIT_TIME = 250;
+    public static final int SNAPSHOT_WAIT_TIME = 5000;
     final String TAG = "BGService";
     final IBinder dataBinder;
     Connection connection;
@@ -68,13 +70,17 @@ public class BGService extends Service {
                             msg.obj = ms;
                             msg.what = Commands.MEDIADATA;
                             uiHandler.sendMessage(msg);
+                        } else {
+                            uiHandler.sendEmptyMessage(Commands.DISCONNECTED);
                         }
 
-                        wait(300);
+                        wait(POOLING_WAIT_TIME);
                     } catch (InterruptedException e) {
                         Log.d(TAG, "task error");
                     }
                 }
+
+                //stopSelf();
             }
         }).start();
     }
@@ -98,14 +104,18 @@ public class BGService extends Service {
                                 msg.obj = bmp;
                                 msg.what = Commands.SNAPSHOT;
                                 uiHandler.sendMessage(msg);
+                            } else {
+                                uiHandler.sendEmptyMessage(Commands.DISCONNECTED);
                             }
-                            wait(3000);
+                            wait(SNAPSHOT_WAIT_TIME);
                         }
 
                     } catch (InterruptedException e) {
                         Log.d(TAG, "loadSnapshot error");
                     }
                 }
+
+                //stopSelf();
             }
         }).start();
     }
@@ -115,10 +125,10 @@ public class BGService extends Service {
      * Code is taken from 'Commands' class
      * @param value Request code
      */
-    public void sendReq(final int value) {
+    public void execCommand(final int value) {
         new Thread(new Runnable() {
             public void run() {
-                connection.sendReq(value);
+                connection.execCommand(value);
             }
         }).start();
     }

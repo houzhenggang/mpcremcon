@@ -30,7 +30,8 @@
             android:layout_alignParentEnd="true"
             android:layout_alignParentStart="true"
             android:layout_marginLeft="@dimen/bottom_margin"
-            android:layout_marginRight="@dimen/bottom_margin" />
+            android:layout_marginRight="@dimen/bottom_margin"
+            android:progress="0" />
 
         <LinearLayout
             android:orientation="horizontal"
@@ -43,11 +44,11 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="11:28"
+                android:text="00:00"
                 android:id="@+id/tvCurrentTime"
                 android:layout_centerVertical="true"
                 android:layout_alignParentStart="true"
-                android:textColor="@android:color/white"
+                android:textColor="@android:color/black"
                 android:textIsSelectable="false"
                 android:textSize="@dimen/text_size"
                 android:layout_marginLeft="@dimen/text_margin" />
@@ -55,13 +56,13 @@
             <TextView
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:text="28:10"
+                android:text="00:00"
                 android:id="@+id/tvFullTime"
                 android:singleLine="true"
                 android:gravity="right"
                 android:layout_centerVertical="true"
                 android:autoText="false"
-                android:textColor="@android:color/white"
+                android:textColor="@android:color/black"
                 android:textSize="@dimen/text_size"
                 android:layout_marginRight="@dimen/text_margin" />
         </LinearLayout>
@@ -83,15 +84,17 @@
                 android:layout_height="@dimen/button_size"
                 android:id="@+id/ibFullscreen"
                 android:layout_centerHorizontal="true"
-                android:background="@android:drawable/ic_menu_set_as"
-                android:clickable="true" />
+                android:clickable="true"
+                android:adjustViewBounds="false"
+                android:cropToPadding="false"
+                android:background="@drawable/fullscreen" />
 
             <ImageButton
                 android:layout_width="@dimen/button_size"
                 android:layout_height="@dimen/button_size"
                 android:id="@+id/ibPrev"
                 android:layout_centerHorizontal="true"
-                android:background="@android:drawable/ic_media_previous"
+                android:background="@drawable/prev"
                 android:clickable="true" />
 
             <ImageButton
@@ -99,7 +102,7 @@
                 android:layout_height="@dimen/button_size"
                 android:id="@+id/ibPlay"
                 android:layout_centerHorizontal="true"
-                android:background="@android:drawable/ic_media_play"
+                android:background="@drawable/play"
                 android:clickable="false" />
 
             <ImageButton
@@ -107,14 +110,14 @@
                 android:layout_height="@dimen/button_size"
                 android:id="@+id/ibStop"
                 android:layout_centerHorizontal="true"
-                android:background="@android:drawable/ic_delete" />
+                android:background="@drawable/stop" />
 
             <ImageButton
                 android:layout_width="@dimen/button_size"
                 android:layout_height="@dimen/button_size"
                 android:id="@+id/ibNext"
                 android:layout_centerHorizontal="true"
-                android:background="@android:drawable/ic_media_next"
+                android:background="@drawable/next"
                 android:clickable="true" />
 
             <ImageButton
@@ -122,7 +125,7 @@
                 android:layout_height="@dimen/button_size"
                 android:id="@+id/ibMute"
                 android:layout_centerHorizontal="true"
-                android:background="@android:drawable/ic_lock_silent_mode_off"
+                android:background="@drawable/mute_on"
                 android:clickable="true" />
 
             <SeekBar
@@ -134,7 +137,8 @@
                 android:layout_gravity="center_vertical|right"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentStart="true"
-                android:layout_marginLeft="25dp" />
+                android:layout_marginLeft="25dp"
+                android:progress="0" />
         </LinearLayout>
     </LinearLayout>
 

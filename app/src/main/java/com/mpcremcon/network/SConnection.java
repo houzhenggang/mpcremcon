@@ -13,11 +13,9 @@ import android.os.IBinder;
 public class SConnection implements ServiceConnection {
     BGService service;
     Handler uiHandler;
-    Handler snapshotHandler;
 
-    public SConnection(Handler uiHandler, Handler snapshotHandler) {
+    public SConnection(Handler uiHandler) {
         this.uiHandler = uiHandler;
-        this.snapshotHandler = snapshotHandler;
     }
 
     public void onServiceConnected(ComponentName className, IBinder binder) {
@@ -25,7 +23,7 @@ public class SConnection implements ServiceConnection {
         service = db.getService();
 
         service.task(uiHandler);
-        service.loadSnapshot(snapshotHandler);
+        service.loadSnapshot(uiHandler);
     }
 
     public void onServiceDisconnected(ComponentName className) {
@@ -36,8 +34,8 @@ public class SConnection implements ServiceConnection {
      * Send a command to MPC server
      * @param s Command
      */
-    public void sendReq(int s) {
-        service.sendReq(s);
+    public void execCommand(int s) {
+        service.execCommand(s);
     }
 
     /**

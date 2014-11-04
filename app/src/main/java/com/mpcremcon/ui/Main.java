@@ -1,7 +1,10 @@
 package com.mpcremcon.ui;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -47,12 +50,14 @@ public class Main extends Activity {
     SeekBar volumeBar;
 
     // additional controls
+    public static Boolean isProgressBarMoving = false;
+    public static Boolean isVolumeBarMoving = false;
     public static Boolean isPaused = false;
     ImageView snapshot;
 
     SConnection serviceConnection;
     Handler uiHandler;
-    Handler snapshotHandler;
+    Intent service;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +80,7 @@ public class Main extends Activity {
         play.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                serviceConnection.sendReq(Commands.PLAY_PAUSE);
+                serviceConnection.execCommand(Commands.PLAY_PAUSE);
             }
         });
 
@@ -83,8 +88,7 @@ public class Main extends Activity {
         stop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                play.setBackground( getResources().getDrawable(android.R.drawable.ic_media_pause));
-                serviceConnection.sendReq(Commands.Stop);
+                serviceConnection.execCommand(Commands.STOP);
             }
         });
 
@@ -92,7 +96,7 @@ public class Main extends Activity {
         prev.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                serviceConnection.sendReq(Commands.Prev);
+                serviceConnection.execCommand(Commands.PREV);
             }
         });
 
@@ -100,7 +104,7 @@ public class Main extends Activity {
         next.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                serviceConnection.sendReq(Commands.Next);
+                serviceConnection.execCommand(Commands.NEXT);
             }
         });
 
@@ -108,7 +112,7 @@ public class Main extends Activity {
         fullscreen.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                serviceConnection.sendReq(Commands.Fullscreen);
+                serviceConnection.execCommand(Commands.FULLSCREEN);
             }
         });
 
@@ -116,7 +120,7 @@ public class Main extends Activity {
         mute.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                serviceConnection.sendReq(Commands.Mute);
+                serviceConnection.execCommand(Commands.MUTE);
             }
         });
 
@@ -124,16 +128,11 @@ public class Main extends Activity {
         timeSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                /*if(b) {
-                    int v = (100*i)/seekBar.getMax();
-                    if(v < 0) v = 0;
-                    if(v >= 100) v = 99;
-                    serviceConnection.setPosition(v);
-                }*/
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
+                isProgressBarMoving = true;
             }
 
             @Override
@@ -142,6 +141,7 @@ public class Main extends Activity {
                 if(v < 0) v = 0;
                 if(v >= 100) v = 99;
                 serviceConnection.setPosition(v);
+                isProgressBarMoving = false;
             }
         });
 
@@ -149,26 +149,47 @@ public class Main extends Activity {
         volumeBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                /*if(b) {
-                    serviceConnection.setVolume(i);
-                }*/
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
+                isVolumeBarMoving = true;
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 serviceConnection.setVolume(seekBar.getProgress());
+                isVolumeBarMoving = false;
             }
         });
     }
 
     @Override
-    protected void onPause() {
+    protected void onResume() {
+        try {
+            if (service != null && serviceConnection != null)
+                bindService(service, serviceConnection, Context.BIND_AUTO_CREATE);
+        } catch(Exception e) {
+            Log.d("MAIN", "Can't bind to service");
+        }
+        super.onResume();
+    }
 
+    @Override
+    protected void onPause() {
+        try {
+            if(serviceConnection != null)
+                unbindService(serviceConnection);
+        } catch(Exception e) {
+            Log.d("MAIN", "Can't unbind the service");
+        }
         super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        uiHandler.removeCallbacksAndMessages(null);
+        super.onDestroy();
     }
 
     @Override
@@ -181,15 +202,33 @@ public class Main extends Activity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_settings) {
+            // start settings activity
             Intent p = new Intent(getApplicationContext(), PrefActivity.class);
             startActivity(p);
             return true;
         }
         if (id == R.id.action_exit) {
+            // exit application and unbind service
             try {
                 unbindService(serviceConnection);
                 finish();
             } catch(Exception e) {}
+        }
+        if( id == R.id.action_close_mpc) {
+            // close MPC player
+            serviceConnection.execCommand(Commands.EXIT_PLAYER);
+        }
+        if( id == R.id.action_about) {
+            // show about message dialog
+            AlertDialog.Builder ad = new AlertDialog.Builder(this);
+            ad.setPositiveButton("Ok",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        //dismiss the dialog
+                    }
+            }).setTitle("About");
+            ad.setView(getLayoutInflater().inflate(R.layout.about, null));
+            ad.show();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -216,28 +255,8 @@ public class Main extends Activity {
     }
 
     private void initUiHandler() {
-        Intent i = new Intent(this, BGService.class);
-        startService(i);
-
-        snapshotHandler = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                switch(msg.what) {
-                    case Commands.SNAPSHOT: {
-                        try {
-                            Bitmap bmp = (Bitmap) msg.obj;
-                            if (bmp != null) {
-                                //snapshot.setImageBitmap(bmp);
-                                ImageViewAnimatedChange(getApplicationContext(), snapshot, bmp);
-                            }
-                        } catch (Exception e) {
-                            Log.d("Main", "Error loading image");
-                        }
-                        break;
-                    }
-                }
-            }
-        };
+        service = new Intent(this, BGService.class);
+        startService(service);
 
         // update media time
         uiHandler = new Handler() {
@@ -247,22 +266,32 @@ public class Main extends Activity {
                     try {
                         MediaStatus ms = (MediaStatus) msg.obj;
                         if (ms != null) {
+                            setTitle(ms.getFilename() + " - Connected");
                             tvCurTime.setText(ms.getPositionString());
                             tvFullTime.setText(ms.getDurationString());
-
                             timeSeekBar.setMax(ms.getDuration());
-                            timeSeekBar.setProgress(ms.getPosition());
-                            setTitle(ms.getFilename() + " - Connected");
 
+                            if(!isProgressBarMoving)
+                                timeSeekBar.setProgress(ms.getPosition());
+
+                            // check pause state
                             Main.isPaused = ms.getPlayState();
 
                             if(isPaused) {
-                                play.setBackground( getResources().getDrawable(android.R.drawable.ic_media_pause));
+                                play.setBackground( getResources().getDrawable(R.drawable.pause));
                             } else {
-                                play.setBackground( getResources().getDrawable(android.R.drawable.ic_media_play));
+                                play.setBackground( getResources().getDrawable(R.drawable.play));
                             }
 
-                            volumeBar.setProgress(ms.getVolumeLevel());
+                            // check mute status
+                            if(ms.getIsMuted()) {
+                                mute.setBackground( getResources().getDrawable(R.drawable.mute_on));
+                            } else {
+                                mute.setBackground( getResources().getDrawable(R.drawable.mute_off));
+                            }
+
+                            if(!isVolumeBarMoving)
+                                volumeBar.setProgress(ms.getVolumeLevel());
                         }
                     } catch(Exception e) {
                         Log.d("Main", e.getMessage());
@@ -270,15 +299,26 @@ public class Main extends Activity {
                     break;
                 }
                 case Commands.DISCONNECTED: {
-                    String oldTitle = getTitle().toString();
-                    if(!oldTitle.endsWith("Disconnected"))
-                        setTitle(getTitle() + " - Disconnected");
+                    setTitle("Disconnected");
+                    break;
+                }
+                case Commands.SNAPSHOT: {
+                    try {
+                        Bitmap bmp = (Bitmap) msg.obj;
+                        if (bmp != null) {
+                            //snapshot.setImageBitmap(bmp);
+                            ImageViewAnimatedChange(getApplicationContext(), snapshot, bmp);
+                        }
+                    } catch (Exception e) {
+                        Log.d("Main", "Error loading image");
+                    }
+                    break;
                 }
             }
         };
     };
 
-        serviceConnection = new SConnection(uiHandler, snapshotHandler);
-        bindService(i, serviceConnection, Context.BIND_AUTO_CREATE);
+        serviceConnection = new SConnection(uiHandler);
+        bindService(service, serviceConnection, Context.BIND_AUTO_CREATE);
     }
 }

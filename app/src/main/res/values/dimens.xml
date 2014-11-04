@@ -7,4 +7,5 @@
     <dimen name="max_volume_width">150dp</dimen>
     <dimen name="text_size">20dp</dimen>
     <dimen name="text_margin">20dp</dimen>
+    <dimen name="about_top_margin">30dp</dimen>
 </resources>

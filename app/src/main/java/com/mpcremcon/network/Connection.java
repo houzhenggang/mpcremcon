@@ -25,11 +25,11 @@ public class Connection {
     /**
      * Sends commands to MPC player
      */
-    synchronized public void sendReq(final int c) {
+    synchronized public void execCommand(final int c) {
         try {
             Document doc = Jsoup.connect(createRequest(c)).get();
         } catch (Exception e) {
-            Log.d(TAG, "sendReq error");
+            Log.d(TAG, "execCommand error");
         }
     }
 
@@ -39,7 +39,7 @@ public class Connection {
      */
     synchronized public void setPosition(int value) {
         try {
-            String req = createRequest(Commands.SetPosition) + "&percent=" + String.valueOf(value);
+            String req = createRequest(Commands.SET_POSITION) + "&percent=" + String.valueOf(value);
             Document doc = Jsoup.connect(req).get();
             Log.d(TAG, req);
         } catch (Exception e) {
@@ -53,7 +53,7 @@ public class Connection {
      */
     synchronized public void setVolume(int value) {
         try {
-            String req = createRequest(Commands.SetVolume) + "&volume=" + String.valueOf(value);
+            String req = createRequest(Commands.SET_VOLUME) + "&volume=" + String.valueOf(value);
             Document doc = Jsoup.connect(req).get();
             Log.d(TAG, req);
         } catch (Exception e) {
