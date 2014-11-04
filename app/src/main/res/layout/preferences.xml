@@ -6,24 +6,32 @@
     <PreferenceCategory
         android:title="Network">
 
-
         <EditTextPreference
-            android:id="@+id/ipaddress"
             android:key="ipaddress"
             android:title="IP Address"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:maxLines="1">
+            android:maxLines="1"
+            android:inputType="text">
         </EditTextPreference>
 
         <EditTextPreference
-            android:id="@+id/port"
             android:key="port"
             android:title="Port"
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
-            android:maxLines="1">
+            android:maxLines="1"
+            android:inputType="text">
         </EditTextPreference>
 
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="About">
+
+        <EditTextPreference
+            android:key="about"
+            android:title="About">
+        </EditTextPreference>
     </PreferenceCategory>
 </PreferenceScreen>

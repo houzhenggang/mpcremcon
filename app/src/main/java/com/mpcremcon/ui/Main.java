@@ -1,10 +1,7 @@
 package com.mpcremcon.ui;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -201,34 +198,26 @@ public class Main extends Activity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            // start settings activity
-            Intent p = new Intent(getApplicationContext(), PrefActivity.class);
-            startActivity(p);
-            return true;
-        }
-        if (id == R.id.action_exit) {
-            // exit application and unbind service
-            try {
-                unbindService(serviceConnection);
-                finish();
-            } catch(Exception e) {}
-        }
-        if( id == R.id.action_close_mpc) {
-            // close MPC player
-            serviceConnection.execCommand(Commands.EXIT_PLAYER);
-        }
-        if( id == R.id.action_about) {
-            // show about message dialog
-            AlertDialog.Builder ad = new AlertDialog.Builder(this);
-            ad.setPositiveButton("Ok",
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        //dismiss the dialog
-                    }
-            }).setTitle("About");
-            ad.setView(getLayoutInflater().inflate(R.layout.about, null));
-            ad.show();
+        switch(id) {
+            case R.id.action_settings: {
+                // start settings activity
+                Intent p = new Intent(getApplicationContext(), PrefActivity.class);
+                startActivity(p);
+                break;
+            }
+            case R.id.action_exit: {
+                // exit application and unbind service
+                try {
+                    unbindService(serviceConnection);
+                    finish();
+                } catch(Exception e) {}
+                break;
+            }
+            case R.id.action_close_mpc: {
+                // close MPC player
+                serviceConnection.execCommand(Commands.EXIT_PLAYER);
+                break;
+            }
         }
         return super.onOptionsItemSelected(item);
     }
