@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 /**
  * Created by Oleh Chaplya on 03.11.2014.
  */
-public class PrefActivity extends PreferenceActivity {
+public class Settings extends PreferenceActivity {
 
     private static final String IP_PATTERN =
             "^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +

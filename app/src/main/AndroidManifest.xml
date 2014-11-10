@@ -21,13 +21,13 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.PrefActivity"
+            android:name=".ui.Settings"
             android:label="@string/action_settings">
         </activity>
 
-        <activity android:name=".ui.MediaBrowser"></activity>
+        <activity android:name=".ui.FileBrowser"></activity>
         <service
-            android:name=".network.BGService"
+            android:name=".network.BackgroundService"
             android:enabled="true"
             android:exported="true" >
         </service>

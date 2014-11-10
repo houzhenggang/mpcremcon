@@ -9,7 +9,9 @@ import android.os.IBinder;
 import android.os.Message;
 import android.util.Log;
 
+import com.mpcremcon.filebrowser.MediaEntityList;
 import com.mpcremcon.ui.Main;
+import com.mpcremcon.ui.FileBrowser;
 
 /**
  * Main service, which runs tasks in background.
@@ -18,23 +20,23 @@ import com.mpcremcon.ui.Main;
  *
  * Created by Oleh Chaplya on 3.10.2014.
  */
-public class BGService extends Service {
+public class BackgroundService extends Service {
 
     public static final int POOLING_WAIT_TIME = 250;
     public static final int SNAPSHOT_WAIT_TIME = 5000;
     final String TAG = "BGService";
     final IBinder dataBinder;
-    Connection connection;
+    MediaPlayerAPI mediaPlayerAPI;
 
     public static Boolean stopAll = false;
 
-    public BGService() {
+    public BackgroundService() {
         dataBinder = new DataBinder(this);
     }
 
     public void onCreate() {
         super.onCreate();
-        connection = new Connection();
+        mediaPlayerAPI = new MediaPlayerAPI();
     }
 
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -64,7 +66,7 @@ public class BGService extends Service {
 
                 while (!stopAll) {
                     try {
-                        ms = connection.getStatus();
+                        ms = mediaPlayerAPI.getStatus();
                         if(ms != null) {
                             Message msg = new Message();
                             msg.obj = ms;
@@ -98,7 +100,7 @@ public class BGService extends Service {
                 while (!stopAll) {
                     try {
                         if(Main.isPaused) {
-                            bmp = connection.loadSnapshot();
+                            bmp = mediaPlayerAPI.loadSnapshot();
                             if(bmp != null) {
                                 Message msg = new Message();
                                 msg.obj = bmp;
@@ -128,7 +130,7 @@ public class BGService extends Service {
     public void execCommand(final int value) {
         new Thread(new Runnable() {
             public void run() {
-                connection.execCommand(value);
+                mediaPlayerAPI.execCommand(value);
             }
         }).start();
     }
@@ -140,7 +142,7 @@ public class BGService extends Service {
     public void setPosition(final int value) {
         new Thread(new Runnable() {
             public void run() {
-                connection.setPosition(value);
+                mediaPlayerAPI.setPosition(value);
             }
         }).start();
     }
@@ -152,36 +154,33 @@ public class BGService extends Service {
     public void setVolume(final int value) {
         new Thread(new Runnable() {
             public void run() {
-                connection.setVolume(value);
+                mediaPlayerAPI.setVolume(value);
             }
         }).start();
     }
 
     /**
      * Sends queries to get state of media browser
-     * @param listHandler
+     * @param listHandler handler where send results
+     * @param path path to query
      */
-    @Deprecated
-    synchronized public void queryMediaBrowser(final Handler listHandler) {
+    synchronized public void queryMediaBrowser(final Handler listHandler, final String path) {
         new Thread(new Runnable() {
-            synchronized public void run() {
-                    /*try {
-                        if(Main.isPaused) {
-                            if(bmp != null) {
-                                Message msg = new Message();
-                                msg.obj = bmp;
-                                msg.what = Commands.SNAPSHOT;
-                                listHandler.sendMessage(msg);
-                            } else {
-                                listHandler.sendEmptyMessage(Commands.DISCONNECTED);
-                            }
-                        }
+            @Override
+            public void run() {
+                FileBrowser.IS_DATA_UPDATING = true;
+                MediaEntityList m = mediaPlayerAPI.getBrowser(path);
+                Message msg = new Message();
 
-                    } catch (InterruptedException e) {
-                        Log.d(TAG, "loadSnapshot error");
+                if(m != null) {
+                    msg.what = Commands.NEWDATA;
+                    msg.obj = m;
+
+                    listHandler.sendMessage(msg);
+                } else {
+                    listHandler.sendEmptyMessage(Commands.ERROR);
                 }
-*/
-                //stopSelf();
+                FileBrowser.IS_DATA_UPDATING = false;
             }
         }).start();
     }
@@ -191,13 +190,13 @@ public class BGService extends Service {
      * Used only to get a service instance
      */
     public class DataBinder extends Binder {
-        BGService service;
+        BackgroundService service;
 
-        public DataBinder(BGService service) {
+        public DataBinder(BackgroundService service) {
             this.service = service;
         }
 
-        BGService getService() {
+        BackgroundService getService() {
             return service;
         }
     }

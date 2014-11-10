@@ -1,6 +1,7 @@
 package com.mpcremcon.ui;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -9,10 +10,11 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.mpcremcon.R;
-import com.mpcremcon.browser.MediaEntity;
-import com.mpcremcon.browser.MediaEntityList;
-import com.mpcremcon.browser.MediaListAdapter;
+import com.mpcremcon.filebrowser.MediaEntity;
+import com.mpcremcon.filebrowser.MediaEntityList;
+import com.mpcremcon.filebrowser.MediaListAdapter;
 import com.mpcremcon.network.Commands;
+import com.mpcremcon.network.MediaPlayerAPI;
 import com.mpcremcon.network.Connection;
 
 import java.util.ArrayList;
@@ -21,27 +23,27 @@ import java.util.List;
 /**
  * Created by Oleh Chaplya on 05.11.2014.
  */
-public class MediaBrowser extends Activity {
+public class FileBrowser extends Activity {
 
-    static final String TAG = "MediaBrowser";
-    static Boolean IS_DATA_UPDATING = false;
+    static final String TAG = "FileBrowser";
+    public static Boolean IS_DATA_UPDATING = false;
 
     // ui
     ListView mediaList;
     MediaListAdapter adapter;
 
     Handler listHandler;
-    Connection conn;
+    MediaPlayerAPI conn;
 
-    String currentPath = "";
     private List<MediaEntity> dataList = new ArrayList<MediaEntity>();
+    private Connection serviceConnection;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.media_list);
 
-        conn = new Connection();
+        conn = new MediaPlayerAPI();
         mediaList = (ListView) findViewById(R.id.mediaList);
         adapter = new MediaListAdapter(this, dataList);
 
@@ -55,13 +57,42 @@ public class MediaBrowser extends Activity {
         });
 
         initHandler();
-        if(!IS_DATA_UPDATING) queryMediaBrowser("");
     }
 
     @Override
     protected void onResume() {
+        try {
+            if (Main.service != null && serviceConnection != null)
+                bindService(Main.service, serviceConnection, Context.BIND_AUTO_CREATE);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
         super.onResume();
-        //queryMediaBrowser("");
+    }
+
+    @Override
+    protected void onPause() {
+        try {
+            if(serviceConnection != null)
+                unbindService(serviceConnection);
+            listHandler.removeCallbacksAndMessages(null);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+        super.onPause();
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        try {
+            if(serviceConnection != null)
+                unbindService(serviceConnection);
+            listHandler.removeCallbacksAndMessages(null);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+        super.onDestroy();
     }
 
     private void initHandler() {
@@ -74,8 +105,6 @@ public class MediaBrowser extends Activity {
                         MediaEntityList data = (MediaEntityList) msg.obj;
                         setTitle(data.getPath());
                         updateListData(data);
-                        //adapter.addAll(data.getList());
-                        //adapter.notifyDataSetChanged();
                         break;
                     }
                     case Commands.ERROR: {
@@ -88,10 +117,13 @@ public class MediaBrowser extends Activity {
                 }
             }
         };
+
+        serviceConnection = new Connection();
+        serviceConnection.setListHandler(listHandler);
+        bindService(Main.service, serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
     private void updateListData(final MediaEntityList data) {
-
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -107,23 +139,6 @@ public class MediaBrowser extends Activity {
      */
     private void queryMediaBrowser(final String path) {
         setTitle("Loading new data...");
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                IS_DATA_UPDATING = true;
-                MediaEntityList m = conn.getBrowser(path);
-                Message msg = new Message();
-
-                if(m != null) {
-                    msg.what = Commands.NEWDATA;
-                    msg.obj = m;
-
-                    listHandler.sendMessage(msg);
-                } else {
-                    listHandler.sendEmptyMessage(Commands.ERROR);
-                }
-                IS_DATA_UPDATING = false;
-            }
-        }).start();
+        serviceConnection.queryMediaBrowser(path);
     }
 }

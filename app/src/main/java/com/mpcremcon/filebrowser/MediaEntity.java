@@ -1,4 +1,4 @@
-package com.mpcremcon.browser;
+package com.mpcremcon.filebrowser;
 
 /**
  * Represents entity from media browser
@@ -12,19 +12,19 @@ public class MediaEntity {
     private String Date;
     private String DirPath;
 
-    private MediaFormats.Format Format;
+    private MediaFormats.Type MediaType;
 
     public MediaEntity(String name) {
         Name = name;
     }
 
-    public MediaEntity(String name, String type, String size, String date, String DirPath, MediaFormats.Format format) {
+    public MediaEntity(String name, String type, String size, String date, String DirPath, MediaFormats.Type format) {
         this.Name = name;
         this.Type = type;
         this.Size = size;
         this.Date = date;
         this.DirPath = DirPath;
-        Format = format;
+        this.MediaType = format;
     }
 
     public String getName() {
@@ -47,8 +47,8 @@ public class MediaEntity {
         return DirPath;
     }
 
-    public MediaFormats.Format getFormat() {
-        return Format;
+    public MediaFormats.Type getMediaType() {
+        return MediaType;
     }
 
     @Override

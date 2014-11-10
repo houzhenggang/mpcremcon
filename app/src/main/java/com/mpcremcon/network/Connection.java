@@ -1,216 +1,79 @@
 package com.mpcremcon.network;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.util.Log;
+import android.content.ComponentName;
+import android.content.ServiceConnection;
+import android.os.Handler;
+import android.os.IBinder;
 
-import com.mpcremcon.browser.MediaEntity;
-import com.mpcremcon.browser.MediaEntityList;
-import com.mpcremcon.browser.MediaFormats;
-import com.mpcremcon.localdb.LocalSettings;
-
-import org.apache.http.client.HttpClient;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
+import com.mpcremcon.ui.FileBrowser;
 
 /**
- * Basic class for sending requests
+ * Main service connection class
  *
- * Created by Oleh Chaplya on 16.07.2014.
+ * Created by Oleh Chaplya on 02.11.2014.
  */
-public class Connection {
-    final String TAG = "Connection";
-    static final HttpClient client = new DefaultHttpClient();
+public class Connection implements ServiceConnection {
+    BackgroundService service;
 
-        /**
-     * Sends commands to MPC player
-     */
-    synchronized public void execCommand(final int c) {
-        try {
-            Document doc = Jsoup.connect(createRequest(c)).get();
-        } catch (Exception e) {
-            e.printStackTrace();
+    Handler uiHandler;
+
+    Handler listHandler;
+
+    public void setUiHandler(Handler uiHandler) {
+        this.uiHandler = uiHandler;
+    }
+
+    public void setListHandler(Handler listHandler) {
+        this.listHandler = listHandler;
+    }
+
+    public void onServiceConnected(ComponentName className, IBinder binder) {
+        BackgroundService.DataBinder db = (BackgroundService.DataBinder)binder;
+        service = db.getService();
+
+        if(uiHandler != null) {
+            service.task(uiHandler);
+            service.loadSnapshot(uiHandler);
+        }
+        if(listHandler != null) {
+            if(!FileBrowser.IS_DATA_UPDATING)
+                queryMediaBrowser("");
         }
     }
 
-    /**
-     * Sets the position value in percents
-     * @param value in percents from 0 to 99
-     */
-    synchronized public void setPosition(int value) {
-        try {
-            String req = createRequest(Commands.SET_POSITION) + "&percent=" + String.valueOf(value);
-            Document doc = Jsoup.connect(req).get();
-            Log.d(TAG, req);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public void onServiceDisconnected(ComponentName className) {
+        service = null;
     }
 
     /**
-     * Sets the volume value in percents
-     * @param value in percents from 0 to 99
+     * Send a command to MPC server
+     * @param s Command
      */
-    synchronized public void setVolume(int value) {
-        try {
-            String req = createRequest(Commands.SET_VOLUME) + "&volume=" + String.valueOf(value);
-            Document doc = Jsoup.connect(req).get();
-            Log.d(TAG, req);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public void execCommand(int s) {
+        service.execCommand(s);
     }
 
     /**
-     * Gets a status of current media player
-     * @return MediaStatus object. Returns null if getStatus failed
+     * Set seek bar position in currently playing media
+     * @param value value from 0 to 99
      */
-    synchronized public MediaStatus getStatus() {
-        MediaStatus ms = null;
-
-        try {
-            Document doc = Jsoup.connect(createBaseURL() + "/variables.html").get();
-
-            String[] fp = doc.select("#filepath").text().split("\\\\");
-            String filename = fp[fp.length-1];
-
-            int pos = Integer.valueOf(doc.select("#position").text());
-            String posStr = doc.select("#positionstring").text();
-
-            int dur = Integer.valueOf(doc.select("#duration").text());
-            String durStr = doc.select("#durationstring").text();
-
-            int volume = Integer.valueOf(doc.select("#volumelevel").text());
-            Boolean isMuted = Boolean.valueOf(doc.select("#muted").text());
-
-            int t = Integer.valueOf(doc.select("#state").text());
-            Boolean playState;
-
-            if(t == 1) playState = false;
-            else playState = true;
-
-            ms = new MediaStatus(filename, pos, posStr, dur, durStr, volume, isMuted, playState);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return ms;
+    public void setPosition(int value) {
+        service.setPosition(value);
     }
 
     /**
-     * Loads a shapshot image
-     * @return a Bitmap image of null if error
+     * Set the volume bar position in currently playing media
+     * @param value value from 0 to 99
      */
-    synchronized public Bitmap loadSnapshot() {
-        Bitmap bmp = null;
-        try {
-            URL url = new URL(createBaseURL() + "/snapshot.jpg");
-            bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return bmp;
+    public void setVolume(int value) {
+        service.setVolume(value);
     }
 
     /**
-     * Creates a URI from command code
-     * @param c Command code
-     * @return full http get uri
+     * Get data from path
+     * @param path path to query
      */
-    private String createRequest(int c) {
-        return createBaseURL() + "/command.html?wm_command=" + String.valueOf(c);
+    public void queryMediaBrowser(final String path) {
+        service.queryMediaBrowser(listHandler, path);
     }
-
-    /**
-     * Creates base URI based on local settings
-     * @return a URI string
-     */
-    private String createBaseURL() {
-        return "http://" + LocalSettings.getIPAddress() + ":" + LocalSettings.getPort();
-    }
-
-    /**
-     * Returns current folder data in list
-     * Set path to "" for default folder data
-     *
-     * @return MediaEntityList with elements of null if error
-     */
-    synchronized public MediaEntityList getBrowser(String path) {
-        MediaEntityList mel = null;
-
-        ArrayList<MediaEntity> list = new ArrayList<MediaEntity>();
-
-        if(path.equals("")) path = "/browser.html?";
-
-        try {
-            Document doc = Jsoup.connect(createBaseURL() + path).get();
-            Elements tr = doc.getElementsByClass("browser-table").last().getElementsByTag("tr");
-
-            // parse path
-            path = doc.select("td.text-center").text();
-            path = path.substring(path.indexOf(" ")).trim();
-
-            // parse all elements
-            for(Element i: tr) {
-                // skip first, because there is no data
-                if(i == tr.get(0)) continue;
-
-                try {
-                    if (i.className().equals("")) {
-                        // parse as directory
-                        Element e = i.select("td.dirname").first().select("a").first();
-                        String dirpath = e.attr("href");
-                        String dirname = e.text();
-                        String dirtype = e.select("dirtype").text();
-                        String dirsize = e.select("dirsize").text();
-                        String dirdate = e.select("dirdate").text();
-
-                        list.add(new MediaEntity(dirname, dirtype, dirsize, dirdate, dirpath, MediaFormats.Format.DIR));
-                    } else {
-                        // parse as file
-                        Elements elements = i.getAllElements();
-
-                        MediaFormats.Format f = null;
-                        if(Arrays.asList(MediaFormats.VIDEO).contains(i.attr("class").toUpperCase()))
-                        {
-                            String dirpath = elements.get(0).select("a").attr("href");
-                            String dirname = elements.get(0).select("a").text();
-                            String dirtype = elements.get(1).select("td span").text();
-                            String dirsize = elements.get(2).select("td span").text();
-                            String dirdate = elements.get(3).select("td span").text();
-
-                            f = MediaFormats.Format.VIDEO;
-                            list.add(new MediaEntity(dirname, dirtype, dirsize, dirdate, dirpath, f));
-                        }
-
-                        else if (Arrays.asList(MediaFormats.AUDIO).contains(i.attr("class").toUpperCase()))
-                        {
-                            f = MediaFormats.Format.AUDIO;
-                            String dirpath = elements.get(0).select("a").attr("href");
-                            String dirname = elements.get(0).select("a").text();
-                            String dirtype = elements.get(1).select("td span").text();
-                            String dirsize = elements.get(2).select("td span").text();
-                            String dirdate = elements.get(3).select("td span").text();
-
-                            list.add(new MediaEntity(dirname, dirtype, dirsize, dirdate, dirpath, f));
-                        }
-                    }
-                } catch(Exception e) {
-                    e.printStackTrace();
-                }
-            }
-
-            mel = new MediaEntityList(path, list);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-        return mel;
-    }
-
 }

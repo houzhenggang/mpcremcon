@@ -1,4 +1,4 @@
-package com.mpcremcon.browser;
+package com.mpcremcon.filebrowser;
 
 import java.util.ArrayList;
 

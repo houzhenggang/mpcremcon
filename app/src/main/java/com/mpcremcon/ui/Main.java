@@ -7,7 +7,6 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,10 +19,10 @@ import android.widget.TextView;
 
 import com.mpcremcon.R;
 import com.mpcremcon.localdb.LocalSettings;
-import com.mpcremcon.network.BGService;
+import com.mpcremcon.network.BackgroundService;
 import com.mpcremcon.network.Commands;
 import com.mpcremcon.network.MediaStatus;
-import com.mpcremcon.network.SConnection;
+import com.mpcremcon.network.Connection;
 
 /**
  * Main Activity
@@ -45,16 +44,16 @@ public class Main extends Activity {
     TextView tvFullTime;
     SeekBar timeSeekBar;
     SeekBar volumeBar;
+    ImageView snapshot;
 
-    // additional controls
+    // additional state controls
     public static Boolean isProgressBarMoving = false;
     public static Boolean isVolumeBarMoving = false;
     public static Boolean isPaused = false;
-    ImageView snapshot;
 
-    SConnection serviceConnection;
-    Handler uiHandler;
     public static Intent service;
+    Connection serviceConnection;
+    Handler uiHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -167,7 +166,7 @@ public class Main extends Activity {
             if (service != null && serviceConnection != null)
                 bindService(service, serviceConnection, Context.BIND_AUTO_CREATE);
         } catch(Exception e) {
-            Log.d("MAIN", "Can't bind to service");
+            e.printStackTrace();
         }
         super.onResume();
     }
@@ -178,14 +177,21 @@ public class Main extends Activity {
             if(serviceConnection != null)
                 unbindService(serviceConnection);
         } catch(Exception e) {
-            Log.d("MAIN", "Can't unbind the service");
+            e.printStackTrace();
         }
         super.onPause();
     }
 
     @Override
     protected void onDestroy() {
-        uiHandler.removeCallbacksAndMessages(null);
+        try {
+            if(serviceConnection != null)
+                unbindService(serviceConnection);
+                uiHandler.removeCallbacksAndMessages(null);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+
         super.onDestroy();
     }
 
@@ -201,7 +207,7 @@ public class Main extends Activity {
         switch(id) {
             case R.id.action_settings: {
                 // start settings activity
-                Intent p = new Intent(this, PrefActivity.class);
+                Intent p = new Intent(this, Settings.class);
                 startActivity(p);
                 break;
             }
@@ -219,8 +225,7 @@ public class Main extends Activity {
                 break;
             }
             case R.id.action_mediaBrowser: {
-                Intent i = new Intent(this, MediaBrowser.class);
-                //Bundle b = new Bundle();
+                Intent i = new Intent(this, FileBrowser.class);
                 startActivity(i);
             }
         }
@@ -249,7 +254,7 @@ public class Main extends Activity {
     }
 
     private void initUiHandler() {
-        service = new Intent(this, BGService.class);
+        service = new Intent(this, BackgroundService.class);
         startService(service);
 
         // update media time
@@ -260,7 +265,7 @@ public class Main extends Activity {
                     try {
                         MediaStatus ms = (MediaStatus) msg.obj;
                         if (ms != null) {
-                            setTitle(ms.getFilename() + " - Connected");
+                            setTitle(ms.getFilename());
                             tvCurTime.setText(ms.getPositionString());
                             tvFullTime.setText(ms.getDurationString());
                             timeSeekBar.setMax(ms.getDuration());
@@ -288,7 +293,7 @@ public class Main extends Activity {
                                 volumeBar.setProgress(ms.getVolumeLevel());
                         }
                     } catch(Exception e) {
-                        Log.d("Main", e.getMessage());
+                        e.printStackTrace();
                     }
                     break;
                 }
@@ -300,11 +305,10 @@ public class Main extends Activity {
                     try {
                         Bitmap bmp = (Bitmap) msg.obj;
                         if (bmp != null) {
-                            //snapshot.setImageBitmap(bmp);
                             ImageViewAnimatedChange(getApplicationContext(), snapshot, bmp);
                         }
                     } catch (Exception e) {
-                        Log.d("Main", "Error loading image");
+                        e.printStackTrace();
                     }
                     break;
                 }
@@ -312,8 +316,8 @@ public class Main extends Activity {
         };
     };
 
-        serviceConnection = new SConnection(uiHandler);
-        //serviceConnection = new SConnection();
+        serviceConnection = new Connection();
+        serviceConnection.setUiHandler(uiHandler);
         bindService(service, serviceConnection, Context.BIND_AUTO_CREATE);
     }
 }
