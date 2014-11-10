@@ -8,7 +8,8 @@
     <string name="action_about">About</string>
     <string name="about">
     Source code is available on Github:\n\ http://github.com/olehch/mpcremcon\n\ \n\
-    Made by Oleh Chaplya, 2014
+    Developed by Oleh Chaplya, 2014
     </string>
+    <string name="action_mediaBrowser">Browser</string>
 
 </resources>

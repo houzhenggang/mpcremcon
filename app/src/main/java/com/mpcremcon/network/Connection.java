@@ -4,14 +4,21 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
 
+import com.mpcremcon.browser.MediaEntity;
+import com.mpcremcon.browser.MediaEntityList;
+import com.mpcremcon.browser.MediaFormats;
 import com.mpcremcon.localdb.LocalSettings;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Basic class for sending requests
@@ -22,14 +29,14 @@ public class Connection {
     final String TAG = "Connection";
     static final HttpClient client = new DefaultHttpClient();
 
-    /**
+        /**
      * Sends commands to MPC player
      */
     synchronized public void execCommand(final int c) {
         try {
             Document doc = Jsoup.connect(createRequest(c)).get();
         } catch (Exception e) {
-            Log.d(TAG, "execCommand error");
+            e.printStackTrace();
         }
     }
 
@@ -43,7 +50,7 @@ public class Connection {
             Document doc = Jsoup.connect(req).get();
             Log.d(TAG, req);
         } catch (Exception e) {
-            Log.d(TAG, "setPosition error");
+            e.printStackTrace();
         }
     }
 
@@ -57,7 +64,7 @@ public class Connection {
             Document doc = Jsoup.connect(req).get();
             Log.d(TAG, req);
         } catch (Exception e) {
-            Log.d(TAG, "setVolume error");
+            e.printStackTrace();
         }
     }
 
@@ -91,7 +98,7 @@ public class Connection {
 
             ms = new MediaStatus(filename, pos, posStr, dur, durStr, volume, isMuted, playState);
         } catch (Exception e) {
-            Log.d(TAG, "getStatus error");
+            e.printStackTrace();
         }
         return ms;
     }
@@ -106,7 +113,7 @@ public class Connection {
             URL url = new URL(createBaseURL() + "/snapshot.jpg");
             bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream());
         } catch (Exception e) {
-            Log.d(TAG, "snapshot load error");
+            e.printStackTrace();
         }
         return bmp;
     }
@@ -127,4 +134,83 @@ public class Connection {
     private String createBaseURL() {
         return "http://" + LocalSettings.getIPAddress() + ":" + LocalSettings.getPort();
     }
+
+    /**
+     * Returns current folder data in list
+     * Set path to "" for default folder data
+     *
+     * @return MediaEntityList with elements of null if error
+     */
+    synchronized public MediaEntityList getBrowser(String path) {
+        MediaEntityList mel = null;
+
+        ArrayList<MediaEntity> list = new ArrayList<MediaEntity>();
+
+        if(path.equals("")) path = "/browser.html?";
+
+        try {
+            Document doc = Jsoup.connect(createBaseURL() + path).get();
+            Elements tr = doc.getElementsByClass("browser-table").last().getElementsByTag("tr");
+
+            // parse path
+            path = doc.select("td.text-center").text();
+            path = path.substring(path.indexOf(" ")).trim();
+
+            // parse all elements
+            for(Element i: tr) {
+                // skip first, because there is no data
+                if(i == tr.get(0)) continue;
+
+                try {
+                    if (i.className().equals("")) {
+                        // parse as directory
+                        Element e = i.select("td.dirname").first().select("a").first();
+                        String dirpath = e.attr("href");
+                        String dirname = e.text();
+                        String dirtype = e.select("dirtype").text();
+                        String dirsize = e.select("dirsize").text();
+                        String dirdate = e.select("dirdate").text();
+
+                        list.add(new MediaEntity(dirname, dirtype, dirsize, dirdate, dirpath, MediaFormats.Format.DIR));
+                    } else {
+                        // parse as file
+                        Elements elements = i.getAllElements();
+
+                        MediaFormats.Format f = null;
+                        if(Arrays.asList(MediaFormats.VIDEO).contains(i.attr("class").toUpperCase()))
+                        {
+                            String dirpath = elements.get(0).select("a").attr("href");
+                            String dirname = elements.get(0).select("a").text();
+                            String dirtype = elements.get(1).select("td span").text();
+                            String dirsize = elements.get(2).select("td span").text();
+                            String dirdate = elements.get(3).select("td span").text();
+
+                            f = MediaFormats.Format.VIDEO;
+                            list.add(new MediaEntity(dirname, dirtype, dirsize, dirdate, dirpath, f));
+                        }
+
+                        else if (Arrays.asList(MediaFormats.AUDIO).contains(i.attr("class").toUpperCase()))
+                        {
+                            f = MediaFormats.Format.AUDIO;
+                            String dirpath = elements.get(0).select("a").attr("href");
+                            String dirname = elements.get(0).select("a").text();
+                            String dirtype = elements.get(1).select("td span").text();
+                            String dirsize = elements.get(2).select("td span").text();
+                            String dirdate = elements.get(3).select("td span").text();
+
+                            list.add(new MediaEntity(dirname, dirtype, dirsize, dirdate, dirpath, f));
+                        }
+                    }
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            mel = new MediaEntityList(path, list);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+        return mel;
+    }
+
 }

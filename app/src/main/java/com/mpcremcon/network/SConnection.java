@@ -12,18 +12,35 @@ import android.os.IBinder;
  */
 public class SConnection implements ServiceConnection {
     BGService service;
+
     Handler uiHandler;
+
+    Handler listHandler;
+    public SConnection() {}
 
     public SConnection(Handler uiHandler) {
         this.uiHandler = uiHandler;
+    }
+
+    public void setUiHandler(Handler uiHandler) {
+        this.uiHandler = uiHandler;
+    }
+
+    public void setListHandler(Handler listHandler) {
+        this.listHandler = listHandler;
     }
 
     public void onServiceConnected(ComponentName className, IBinder binder) {
         BGService.DataBinder db = (BGService.DataBinder)binder;
         service = db.getService();
 
-        service.task(uiHandler);
-        service.loadSnapshot(uiHandler);
+        if(uiHandler != null) {
+            service.task(uiHandler);
+            service.loadSnapshot(uiHandler);
+        }
+        if(listHandler != null) {
+            service.queryMediaBrowser(listHandler);
+        }
     }
 
     public void onServiceDisconnected(ComponentName className) {

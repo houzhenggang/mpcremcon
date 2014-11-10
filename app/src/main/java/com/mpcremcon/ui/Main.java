@@ -54,7 +54,7 @@ public class Main extends Activity {
 
     SConnection serviceConnection;
     Handler uiHandler;
-    Intent service;
+    public static Intent service;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -201,7 +201,7 @@ public class Main extends Activity {
         switch(id) {
             case R.id.action_settings: {
                 // start settings activity
-                Intent p = new Intent(getApplicationContext(), PrefActivity.class);
+                Intent p = new Intent(this, PrefActivity.class);
                 startActivity(p);
                 break;
             }
@@ -217,6 +217,11 @@ public class Main extends Activity {
                 // close MPC player
                 serviceConnection.execCommand(Commands.EXIT_PLAYER);
                 break;
+            }
+            case R.id.action_mediaBrowser: {
+                Intent i = new Intent(this, MediaBrowser.class);
+                //Bundle b = new Bundle();
+                startActivity(i);
             }
         }
         return super.onOptionsItemSelected(item);
@@ -308,6 +313,7 @@ public class Main extends Activity {
     };
 
         serviceConnection = new SConnection(uiHandler);
+        //serviceConnection = new SConnection();
         bindService(service, serviceConnection, Context.BIND_AUTO_CREATE);
     }
 }

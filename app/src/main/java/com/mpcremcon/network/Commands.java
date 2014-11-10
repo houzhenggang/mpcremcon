@@ -23,4 +23,8 @@ public class Commands {
     public static final int SNAPSHOT = 1;
     public static final int MEDIADATA = 2;
     public static final int DISCONNECTED = 3;
+
+    public static final int NEWDATA = 4;
+    public static final int ERROR = 5;
+    public static final int NOTIFY_DATA_CHANGED = 6;
 }

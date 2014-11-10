@@ -23,9 +23,9 @@
         <activity
             android:name=".ui.PrefActivity"
             android:label="@string/action_settings">
-
         </activity>
 
+        <activity android:name=".ui.MediaBrowser"></activity>
         <service
             android:name=".network.BGService"
             android:enabled="true"

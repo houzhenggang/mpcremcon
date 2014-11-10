@@ -158,6 +158,35 @@ public class BGService extends Service {
     }
 
     /**
+     * Sends queries to get state of media browser
+     * @param listHandler
+     */
+    @Deprecated
+    synchronized public void queryMediaBrowser(final Handler listHandler) {
+        new Thread(new Runnable() {
+            synchronized public void run() {
+                    /*try {
+                        if(Main.isPaused) {
+                            if(bmp != null) {
+                                Message msg = new Message();
+                                msg.obj = bmp;
+                                msg.what = Commands.SNAPSHOT;
+                                listHandler.sendMessage(msg);
+                            } else {
+                                listHandler.sendEmptyMessage(Commands.DISCONNECTED);
+                            }
+                        }
+
+                    } catch (InterruptedException e) {
+                        Log.d(TAG, "loadSnapshot error");
+                }
+*/
+                //stopSelf();
+            }
+        }).start();
+    }
+
+    /**
      * Data binder
      * Used only to get a service instance
      */
