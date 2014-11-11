@@ -5,7 +5,7 @@ import android.content.ServiceConnection;
 import android.os.Handler;
 import android.os.IBinder;
 
-import com.mpcremcon.ui.FileBrowser;
+import com.mpcremcon.ui.FileBrowserActivity;
 
 /**
  * Main service connection class
@@ -14,17 +14,10 @@ import com.mpcremcon.ui.FileBrowser;
  */
 public class Connection implements ServiceConnection {
     BackgroundService service;
-
     Handler uiHandler;
 
-    Handler listHandler;
-
-    public void setUiHandler(Handler uiHandler) {
+    public Connection(Handler uiHandler) {
         this.uiHandler = uiHandler;
-    }
-
-    public void setListHandler(Handler listHandler) {
-        this.listHandler = listHandler;
     }
 
     public void onServiceConnected(ComponentName className, IBinder binder) {
@@ -34,10 +27,7 @@ public class Connection implements ServiceConnection {
         if(uiHandler != null) {
             service.task(uiHandler);
             service.loadSnapshot(uiHandler);
-        }
-        if(listHandler != null) {
-            if(!FileBrowser.IS_DATA_UPDATING)
-                queryMediaBrowser("");
+            service.queryMediaBrowser(uiHandler, "");
         }
     }
 
@@ -74,6 +64,6 @@ public class Connection implements ServiceConnection {
      * @param path path to query
      */
     public void queryMediaBrowser(final String path) {
-        service.queryMediaBrowser(listHandler, path);
+        service.queryMediaBrowser(uiHandler, path);
     }
 }

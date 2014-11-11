@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * Created by Oleh Chaplya on 05.11.2014.
  */
-public class FileBrowser extends Activity {
+public class FileBrowserActivity extends Activity {
 
     static final String TAG = "FileBrowser";
     public static Boolean IS_DATA_UPDATING = false;
@@ -62,8 +62,8 @@ public class FileBrowser extends Activity {
     @Override
     protected void onResume() {
         try {
-            if (Main.service != null && serviceConnection != null)
-                bindService(Main.service, serviceConnection, Context.BIND_AUTO_CREATE);
+            if (MainActivity.service != null && serviceConnection != null)
+                bindService(MainActivity.service, serviceConnection, Context.BIND_AUTO_CREATE);
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -73,8 +73,9 @@ public class FileBrowser extends Activity {
     @Override
     protected void onPause() {
         try {
-            if(serviceConnection != null)
-                unbindService(serviceConnection);
+            if(serviceConnection != null) {
+                    unbindService(serviceConnection);
+                }
             listHandler.removeCallbacksAndMessages(null);
         } catch(Exception e) {
             e.printStackTrace();
@@ -86,9 +87,10 @@ public class FileBrowser extends Activity {
     @Override
     protected void onDestroy() {
         try {
-            if(serviceConnection != null)
-                unbindService(serviceConnection);
-            listHandler.removeCallbacksAndMessages(null);
+            if(serviceConnection != null) {
+                    unbindService(serviceConnection);
+                }
+                listHandler.removeCallbacksAndMessages(null);
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -118,9 +120,9 @@ public class FileBrowser extends Activity {
             }
         };
 
-        serviceConnection = new Connection();
-        serviceConnection.setListHandler(listHandler);
-        bindService(Main.service, serviceConnection, Context.BIND_AUTO_CREATE);
+        //serviceConnection = new Connection();
+        //serviceConnection.setListHandler(listHandler);
+        //bindService(MainActivity.service, serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
     private void updateListData(final MediaEntityList data) {
@@ -139,6 +141,6 @@ public class FileBrowser extends Activity {
      */
     private void queryMediaBrowser(final String path) {
         setTitle("Loading new data...");
-        serviceConnection.queryMediaBrowser(path);
+        //serviceConnection.queryMediaBrowser(path);
     }
 }

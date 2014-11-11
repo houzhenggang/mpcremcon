@@ -10,8 +10,8 @@ import android.os.Message;
 import android.util.Log;
 
 import com.mpcremcon.filebrowser.MediaEntityList;
-import com.mpcremcon.ui.Main;
-import com.mpcremcon.ui.FileBrowser;
+import com.mpcremcon.ui.MainActivity;
+import com.mpcremcon.ui.FileBrowserActivity;
 
 /**
  * Main service, which runs tasks in background.
@@ -57,9 +57,9 @@ public class BackgroundService extends Service {
      * Response is returned as MediaStatus object by handler
      * to UI thread
      *
-     * @param uiHandler Handler for whom message will be sent
+     * @param handler Handler for whom message will be sent
      */
-    synchronized public void task(final Handler uiHandler) {
+    synchronized public void task(final Handler handler) {
         new Thread(new Runnable() {
             synchronized public void run() {
                 MediaStatus ms;
@@ -71,9 +71,9 @@ public class BackgroundService extends Service {
                             Message msg = new Message();
                             msg.obj = ms;
                             msg.what = Commands.MEDIADATA;
-                            uiHandler.sendMessage(msg);
+                            handler.sendMessage(msg);
                         } else {
-                            uiHandler.sendEmptyMessage(Commands.DISCONNECTED);
+                            handler.sendEmptyMessage(Commands.DISCONNECTED);
                         }
 
                         wait(POOLING_WAIT_TIME);
@@ -90,24 +90,24 @@ public class BackgroundService extends Service {
     /**
      * Loads snapshot of video and returns it by handler to UI thread
      *
-     * @param uiHandler handler, where to send the result image
+     * @param handler handler, where to send the result image
      */
-    synchronized public void loadSnapshot(final Handler uiHandler) {
+    synchronized public void loadSnapshot(final Handler handler) {
         new Thread(new Runnable() {
             synchronized public void run() {
                 Bitmap bmp;
 
                 while (!stopAll) {
                     try {
-                        if(Main.isPaused) {
+                        if(MainActivity.isPaused) {
                             bmp = mediaPlayerAPI.loadSnapshot();
                             if(bmp != null) {
                                 Message msg = new Message();
                                 msg.obj = bmp;
                                 msg.what = Commands.SNAPSHOT;
-                                uiHandler.sendMessage(msg);
+                                handler.sendMessage(msg);
                             } else {
-                                uiHandler.sendEmptyMessage(Commands.DISCONNECTED);
+                                handler.sendEmptyMessage(Commands.DISCONNECTED);
                             }
                             wait(SNAPSHOT_WAIT_TIME);
                         }
@@ -161,14 +161,14 @@ public class BackgroundService extends Service {
 
     /**
      * Sends queries to get state of media browser
-     * @param listHandler handler where send results
+     * @param handler handler where send results
      * @param path path to query
      */
-    synchronized public void queryMediaBrowser(final Handler listHandler, final String path) {
+    synchronized public void queryMediaBrowser(final Handler handler, final String path) {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                FileBrowser.IS_DATA_UPDATING = true;
+                FileBrowserActivity.IS_DATA_UPDATING = true;
                 MediaEntityList m = mediaPlayerAPI.getBrowser(path);
                 Message msg = new Message();
 
@@ -176,11 +176,11 @@ public class BackgroundService extends Service {
                     msg.what = Commands.NEWDATA;
                     msg.obj = m;
 
-                    listHandler.sendMessage(msg);
+                    handler.sendMessage(msg);
                 } else {
-                    listHandler.sendEmptyMessage(Commands.ERROR);
+                    handler.sendEmptyMessage(Commands.ERROR);
                 }
-                FileBrowser.IS_DATA_UPDATING = false;
+                FileBrowserActivity.IS_DATA_UPDATING = false;
             }
         }).start();
     }

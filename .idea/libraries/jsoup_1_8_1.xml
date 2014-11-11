@@ -1,5 +1,5 @@
-<component textView="libraryTable">
-  <library textView="jsoup-1.8.1">
+<component name="libraryTable">
+  <library name="jsoup-1.8.1">
     <CLASSES>
       <root url="jar://$PROJECT_DIR$/app/libs/jsoup-1.8.1.jar!/" />
     </CLASSES>

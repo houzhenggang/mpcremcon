@@ -7,9 +7,11 @@
     <string name="action_close_player">Close MPC</string>
     <string name="action_about">About</string>
     <string name="about">
+    MPC Remote Connection v0.3\n\ \n\
     Source code is available on Github:\n\ http://github.com/olehch/mpcremcon\n\ \n\
     Developed by Oleh Chaplya, 2014
     </string>
     <string name="action_mediaBrowser">Browser</string>
+    <string name="snapshot">Snapshot</string>
 
 </resources>
