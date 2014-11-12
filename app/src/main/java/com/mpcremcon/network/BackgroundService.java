@@ -62,20 +62,22 @@ public class BackgroundService extends Service {
         new Thread(new Runnable() {
             synchronized public void run() {
                 MediaStatus ms;
-                try {
-                    ms = mediaPlayerAPI.getStatus();
-                    if(ms != null) {
-                        Message msg = new Message();
-                        msg.obj = ms;
-                        msg.what = Commands.MEDIADATA;
-                        handler.sendMessage(msg);
-                    } else {
-                        handler.sendEmptyMessage(Commands.DISCONNECTED);
-                    }
+                while(true) {
+                    try {
+                        ms = mediaPlayerAPI.getStatus();
+                        if(ms != null) {
+                            Message msg = new Message();
+                            msg.obj = ms;
+                            msg.what = Commands.MEDIADATA;
+                            handler.sendMessage(msg);
+                        } else {
+                            handler.sendEmptyMessage(Commands.DISCONNECTED);
+                        }
 
-                    wait(POOLING_WAIT_TIME);
-                } catch (InterruptedException e) {
-                    Log.d(TAG, "task error");
+                        wait(POOLING_WAIT_TIME);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }).start();
@@ -90,20 +92,21 @@ public class BackgroundService extends Service {
         new Thread(new Runnable() {
             synchronized public void run() {
                 Bitmap bmp;
-
-                try {
-                    bmp = mediaPlayerAPI.loadSnapshot();
-                    if(bmp != null) {
-                        Message msg = new Message();
-                        msg.obj = bmp;
-                        msg.what = Commands.SNAPSHOT;
-                        handler.sendMessage(msg);
-                    } else {
-                        handler.sendEmptyMessage(Commands.DISCONNECTED);
+                while(true) {
+                    try {
+                        bmp = mediaPlayerAPI.loadSnapshot();
+                        if (bmp != null) {
+                            Message msg = new Message();
+                            msg.obj = bmp;
+                            msg.what = Commands.SNAPSHOT;
+                            handler.sendMessage(msg);
+                        } else {
+                            handler.sendEmptyMessage(Commands.DISCONNECTED);
+                        }
+                        wait(SNAPSHOT_WAIT_TIME);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-                    wait(SNAPSHOT_WAIT_TIME);
-                } catch (InterruptedException e) {
-                    Log.d(TAG, "loadSnapshot error");
                 }
             }
         }).start();
@@ -162,10 +165,9 @@ public class BackgroundService extends Service {
                 if(m != null) {
                     msg.what = Commands.NEWDATA;
                     msg.obj = m;
-
                     handler.sendMessage(msg);
                 } else {
-                    handler.sendEmptyMessage(Commands.ERROR);
+                    handler.sendEmptyMessage(Commands.DISCONNECTED);
                 }
                 MainActivity.IS_DATA_UPDATING = false;
             }

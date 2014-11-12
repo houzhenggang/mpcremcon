@@ -474,17 +474,19 @@ public class MainActivity extends Activity {
                     case Commands.SNAPSHOT: {
                         try {
                             Bitmap newBitmap = (Bitmap) msg.obj;
-                            if (newBitmap != null) {
+                            //if (newBitmap != null)
+                            ImageViewAnimatedChange(getApplicationContext(), snapshot, newBitmap);
+                            /*if (newBitmap != null) {
                                 if(lastDownloadedBitmap == null) {
                                     lastDownloadedBitmap = newBitmap;
                                     ImageViewAnimatedChange(getApplicationContext(), snapshot, newBitmap);
                                 } else {
                                     if(!lastDownloadedBitmap.sameAs(newBitmap))
                                         ImageViewAnimatedChange(getApplicationContext(), snapshot, newBitmap);
-                                }
-
+                                }*/
+                                //ImageViewAnimatedChange(getApplicationContext(), snapshot, newBitmap);
                                 //snapshot.setImageBitmap(bmp);
-                            }
+                            //}
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -522,6 +524,7 @@ public class MainActivity extends Activity {
         new Thread(new Runnable() {
             @Override
             public void run() {
+                // update list
                 dataList.clear();
                 dataList.addAll(data.getList());
                 uiHandler.sendEmptyMessage(Commands.NOTIFY_DATA_CHANGED);
