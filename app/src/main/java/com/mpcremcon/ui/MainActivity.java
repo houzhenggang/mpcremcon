@@ -1,14 +1,17 @@
 package com.mpcremcon.ui;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,8 +32,8 @@ import com.mpcremcon.filebrowser.MediaListAdapter;
 import com.mpcremcon.localdb.LocalSettings;
 import com.mpcremcon.network.BackgroundService;
 import com.mpcremcon.network.Commands;
-import com.mpcremcon.network.MediaStatus;
 import com.mpcremcon.network.Connection;
+import com.mpcremcon.network.MediaStatus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,12 +61,18 @@ public class MainActivity extends Activity {
     ImageView snapshot;
     ListView mediaList;
     DrawerLayout mDrawerLayout;
+    DrawerLayout mDrawerLayoutEmptyList;
     ActionBarDrawerToggle mDrawerToggle;
+    ActionBarDrawerToggle mDrawerToggleEmptyList;
+    ActionBar actionBar;
+    ImageView animUpdate;
+    Animation rotation;
+    MenuItem updateItem;
 
     // list drawer state controls
     public static Boolean IS_DATA_UPDATING = false;
     private static Boolean CAN_TITLE_CHANGE = false;
-    private static Boolean USER_PRESSED_ACTION_BAR = false;
+    private static Boolean IS_CONNECTED = false;
     private static Double LEFT_LIST_SIZE_PERCENT = 0.7;
     private static int MAX_LEFT_LIST_SIZE = 400;
     private static int MIX_LEFT_LIST_SIZE = 320;
@@ -80,12 +89,16 @@ public class MainActivity extends Activity {
     Connection serviceConnection;
     Handler uiHandler;
 
+    String lastDirPath = "";
+    private Menu actionMenu;
+
+    Bitmap lastDownloadedBitmap = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //CustomFont.initFont(this);
         LocalSettings.init(getApplicationContext());
 
         initViewIds();
@@ -93,37 +106,33 @@ public class MainActivity extends Activity {
         initActionBarDrawer();
         initDrawerList();
         initUiListeners();
-        applyCustomFont();
-    }
-
-    private void applyCustomFont() {
-
     }
 
     @Override
     protected void onResume() {
+        super.onResume();
         try {
             if (service != null && serviceConnection != null)
                 bindService(service, serviceConnection, Context.BIND_AUTO_CREATE);
         } catch(Exception e) {
             e.printStackTrace();
         }
-        super.onResume();
     }
 
     @Override
     protected void onPause() {
+        super.onPause();
         try {
             if(serviceConnection != null)
                 unbindService(serviceConnection);
         } catch(Exception e) {
             e.printStackTrace();
         }
-        super.onPause();
     }
 
     @Override
     protected void onDestroy() {
+        super.onDestroy();
         try {
             if(serviceConnection != null)
                 unbindService(serviceConnection);
@@ -131,42 +140,41 @@ public class MainActivity extends Activity {
         } catch(Exception e) {
             e.printStackTrace();
         }
-
-        super.onDestroy();
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
+        actionMenu = menu;
+
+        LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        animUpdate = (ImageView)inflater.inflate(R.layout.iv_refresh, null);
+        rotation = AnimationUtils.loadAnimation(this, R.anim.rotate_refresh);
+        rotation.setRepeatCount(Animation.INFINITE);
+
+        updateItem = actionMenu.findItem(R.id.action_update);
+
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        if (mDrawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+
         int id = item.getItemId();
         switch(id) {
+
             case R.id.action_settings: {
                 Intent p = new Intent(this, SettingsActivity.class);
                 startActivity(p);
                 break;
             }
-            /*case R.id.action_exit: {
-                // exit application and unbind service
-                try {
-                    unbindService(serviceConnection);
-                    finish();
-                } catch(Exception e) {}
-                break;
-            }*/
             case R.id.action_close_mpc: {
-                // close MPC player
                 serviceConnection.execCommand(Commands.EXIT_PLAYER);
                 break;
             }
-            /*case R.id.action_mediaBrowser: {
-                Intent i = new Intent(this, FileBrowserActivity.class);
-                startActivity(i);
-            }*/
         }
         return super.onOptionsItemSelected(item);
     }
@@ -192,6 +200,27 @@ public class MainActivity extends Activity {
         v.startAnimation(anim_out);
     }
 
+    private void startAnimUpdate() {
+        if(updateItem != null) {
+            updateItem.setActionView(animUpdate);
+            updateItem.getActionView().startAnimation(rotation);
+            updateItem.setVisible(true);
+            updateItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        }
+    }
+
+    private void stopAnimUpdate() {
+        try {
+            if(updateItem != null) {
+                updateItem.getActionView().clearAnimation();
+                updateItem.setVisible(false);
+                updateItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      *  Called whenever we call invalidateOptionsMenu()
      *  Hides actionbar menu buttons
@@ -213,6 +242,7 @@ public class MainActivity extends Activity {
         snapshot = (ImageView) findViewById(R.id.snapshot);
         mediaList = (ListView) findViewById(R.id.left_drawer);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        actionBar = getActionBar();
     }
 
     private void initUiListeners() {
@@ -305,13 +335,14 @@ public class MainActivity extends Activity {
     }
 
     private void initActionBarDrawer() {
-        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
-                R.drawable.ic_launcher, 0, 0) {
+        // normal list drawer
+        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.drawable.arrows_left, R.drawable.arrows_left_double_32, R.drawable.arrows_right_double_31) {
 
             /** Called when a drawer has settled in a completely closed state. */
             public void onDrawerClosed(View view) {
                 super.onDrawerClosed(view);
                 CAN_TITLE_CHANGE = true;
+                stopAnimUpdate();
                 invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
             }
 
@@ -319,19 +350,40 @@ public class MainActivity extends Activity {
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
                 CAN_TITLE_CHANGE = false;
+                queryMediaBrowser(lastDirPath);
                 invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
             }
         };
 
-        // Set the drawer toggle as the DrawerListener
         mDrawerLayout.setDrawerListener(mDrawerToggle);
+
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        actionBar.setHomeButtonEnabled(true);
+    }
+
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        mDrawerToggle.syncState();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        mDrawerToggle.onConfigurationChanged(newConfig);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(mDrawerLayout.isDrawerOpen(mediaList))
+            mDrawerLayout.closeDrawers();
+        else super.onBackPressed();
     }
 
     /**
      * Create and set list adapter
      */
     private void initDrawerList() {
-        //conn = new MediaPlayerAPI();
         adapter = new MediaListAdapter(this, dataList);
 
         // add adapter
@@ -343,8 +395,11 @@ public class MainActivity extends Activity {
                 if(!IS_DATA_UPDATING) {
                     if(i.getMediaType() == MediaFormats.Type.AUDIO || i.getMediaType() == MediaFormats.Type.VIDEO) {
                         mDrawerLayout.closeDrawers();
+                        queryMediaBrowser(i.getDirPath());
+                    } else {
+                        lastDirPath = i.getDirPath();
+                        queryMediaBrowser(i.getDirPath());
                     }
-                    queryMediaBrowser(i.getDirPath());
                 }
             }
         });
@@ -412,14 +467,22 @@ public class MainActivity extends Activity {
                         break;
                     }
                     case Commands.DISCONNECTED: {
+                        // change title and side drawer
                         if(CAN_TITLE_CHANGE) setTitle("Disconnected");
                         break;
                     }
                     case Commands.SNAPSHOT: {
                         try {
-                            Bitmap bmp = (Bitmap) msg.obj;
-                            if (bmp != null) {
-                                ImageViewAnimatedChange(getApplicationContext(), snapshot, bmp);
+                            Bitmap newBitmap = (Bitmap) msg.obj;
+                            if (newBitmap != null) {
+                                if(lastDownloadedBitmap == null) {
+                                    lastDownloadedBitmap = newBitmap;
+                                    ImageViewAnimatedChange(getApplicationContext(), snapshot, newBitmap);
+                                } else {
+                                    if(!lastDownloadedBitmap.sameAs(newBitmap))
+                                        ImageViewAnimatedChange(getApplicationContext(), snapshot, newBitmap);
+                                }
+
                                 //snapshot.setImageBitmap(bmp);
                             }
                         } catch (Exception e) {
@@ -428,7 +491,7 @@ public class MainActivity extends Activity {
                         break;
                     }
                     case Commands.NEWDATA: {
-                        // update ui dataList adn change data to recent
+                        // update ui dataList and change data to recent
                         MediaEntityList data = (MediaEntityList) msg.obj;
                         setTitle(data.getPath());
                         updateListData(data);
@@ -439,6 +502,7 @@ public class MainActivity extends Activity {
                     }
                     case Commands.NOTIFY_DATA_CHANGED: {
                         adapter.notifyDataSetChanged();
+                        stopAnimUpdate();
                         break;
                     }
                 }
@@ -469,7 +533,7 @@ public class MainActivity extends Activity {
      * Sends requests to get current state of media browser
      */
     private void queryMediaBrowser(final String path) {
-        setTitle("Loading new data...");
+        startAnimUpdate();
         serviceConnection.queryMediaBrowser(path);
     }
 }

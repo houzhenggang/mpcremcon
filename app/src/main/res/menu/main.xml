@@ -1,16 +1,25 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".Main" >
+
+    <item
+        android:id="@+id/action_update"
+        android:showAsAction="always"
+        android:visible="true"
+        android:orderInCategory="1"
+        android:title="@string/action_update"
+        />
+
     <item android:id="@+id/action_settings"
         android:title="@string/action_settings"
         android:icon="@drawable/arrows_hamburger_2"
-        android:orderInCategory="100"
+        android:orderInCategory="2"
         android:showAsAction="always" />
 
     <item android:id="@+id/action_close_mpc"
         android:title="@string/action_close_player"
         android:icon="@drawable/arrows_circle_remove"
-        android:orderInCategory="100"
-        android:showAsAction="ifRoom" />
+        android:orderInCategory="3"
+        android:showAsAction="always" />
 
 </menu>

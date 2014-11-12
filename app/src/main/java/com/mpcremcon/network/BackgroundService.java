@@ -62,26 +62,21 @@ public class BackgroundService extends Service {
         new Thread(new Runnable() {
             synchronized public void run() {
                 MediaStatus ms;
-
-                while (!stopAll) {
-                    try {
-                        ms = mediaPlayerAPI.getStatus();
-                        if(ms != null) {
-                            Message msg = new Message();
-                            msg.obj = ms;
-                            msg.what = Commands.MEDIADATA;
-                            handler.sendMessage(msg);
-                        } else {
-                            handler.sendEmptyMessage(Commands.DISCONNECTED);
-                        }
-
-                        wait(POOLING_WAIT_TIME);
-                    } catch (InterruptedException e) {
-                        Log.d(TAG, "task error");
+                try {
+                    ms = mediaPlayerAPI.getStatus();
+                    if(ms != null) {
+                        Message msg = new Message();
+                        msg.obj = ms;
+                        msg.what = Commands.MEDIADATA;
+                        handler.sendMessage(msg);
+                    } else {
+                        handler.sendEmptyMessage(Commands.DISCONNECTED);
                     }
-                }
 
-                //stopSelf();
+                    wait(POOLING_WAIT_TIME);
+                } catch (InterruptedException e) {
+                    Log.d(TAG, "task error");
+                }
             }
         }).start();
     }
@@ -96,27 +91,20 @@ public class BackgroundService extends Service {
             synchronized public void run() {
                 Bitmap bmp;
 
-                while (!stopAll) {
-                    try {
-                        if(MainActivity.isPaused) {
-                            bmp = mediaPlayerAPI.loadSnapshot();
-                            if(bmp != null) {
-                                Message msg = new Message();
-                                msg.obj = bmp;
-                                msg.what = Commands.SNAPSHOT;
-                                handler.sendMessage(msg);
-                            } else {
-                                handler.sendEmptyMessage(Commands.DISCONNECTED);
-                            }
-                            wait(SNAPSHOT_WAIT_TIME);
-                        }
-
-                    } catch (InterruptedException e) {
-                        Log.d(TAG, "loadSnapshot error");
+                try {
+                    bmp = mediaPlayerAPI.loadSnapshot();
+                    if(bmp != null) {
+                        Message msg = new Message();
+                        msg.obj = bmp;
+                        msg.what = Commands.SNAPSHOT;
+                        handler.sendMessage(msg);
+                    } else {
+                        handler.sendEmptyMessage(Commands.DISCONNECTED);
                     }
+                    wait(SNAPSHOT_WAIT_TIME);
+                } catch (InterruptedException e) {
+                    Log.d(TAG, "loadSnapshot error");
                 }
-
-                //stopSelf();
             }
         }).start();
     }
