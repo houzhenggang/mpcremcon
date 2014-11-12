@@ -24,11 +24,11 @@ import android.widget.TextView;
 import com.mpcremcon.R;
 import com.mpcremcon.filebrowser.MediaEntity;
 import com.mpcremcon.filebrowser.MediaEntityList;
+import com.mpcremcon.filebrowser.MediaFormats;
 import com.mpcremcon.filebrowser.MediaListAdapter;
 import com.mpcremcon.localdb.LocalSettings;
 import com.mpcremcon.network.BackgroundService;
 import com.mpcremcon.network.Commands;
-import com.mpcremcon.network.MediaPlayerAPI;
 import com.mpcremcon.network.MediaStatus;
 import com.mpcremcon.network.Connection;
 
@@ -83,8 +83,9 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.drawer_layout);
+        setContentView(R.layout.activity_main);
 
+        //CustomFont.initFont(this);
         LocalSettings.init(getApplicationContext());
 
         initViewIds();
@@ -92,6 +93,11 @@ public class MainActivity extends Activity {
         initActionBarDrawer();
         initDrawerList();
         initUiListeners();
+        applyCustomFont();
+    }
+
+    private void applyCustomFont() {
+
     }
 
     @Override
@@ -144,14 +150,14 @@ public class MainActivity extends Activity {
                 startActivity(p);
                 break;
             }
-            case R.id.action_exit: {
+            /*case R.id.action_exit: {
                 // exit application and unbind service
                 try {
                     unbindService(serviceConnection);
                     finish();
                 } catch(Exception e) {}
                 break;
-            }
+            }*/
             case R.id.action_close_mpc: {
                 // close MPC player
                 serviceConnection.execCommand(Commands.EXIT_PLAYER);
@@ -196,7 +202,6 @@ public class MainActivity extends Activity {
         boolean drawerOpen = mDrawerLayout.isDrawerOpen(mediaList);
         menu.findItem(R.id.action_close_mpc).setVisible(!drawerOpen);
         menu.findItem(R.id.action_settings).setVisible(!drawerOpen);
-        menu.findItem(R.id.action_exit).setVisible(!drawerOpen);
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -334,8 +339,13 @@ public class MainActivity extends Activity {
         mediaList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int pos, long id) {
-                String path = adapter.getItem(pos).getDirPath();
-                if(!IS_DATA_UPDATING) queryMediaBrowser(path);
+                MediaEntity i = adapter.getItem(pos);
+                if(!IS_DATA_UPDATING) {
+                    if(i.getMediaType() == MediaFormats.Type.AUDIO || i.getMediaType() == MediaFormats.Type.VIDEO) {
+                        mDrawerLayout.closeDrawers();
+                    }
+                    queryMediaBrowser(i.getDirPath());
+                }
             }
         });
 
@@ -370,27 +380,31 @@ public class MainActivity extends Activity {
                                 tvFullTime.setText(ms.getDurationString());
                                 timeSeekBar.setMax(ms.getDuration());
 
-                                if(!isProgressBarMoving)
+                                if(!isProgressBarMoving) {
                                     timeSeekBar.setProgress(ms.getPosition());
+                                    timeSeekBar.setSecondaryProgress(ms.getPosition());
+                                }
 
                                 // check pause state
                                 MainActivity.isPaused = ms.getPlayState();
 
                                 if(isPaused) {
-                                    play.setBackground( getResources().getDrawable(R.drawable.pause));
+                                    play.setBackground( getResources().getDrawable(R.drawable.music_pause_button));
                                 } else {
-                                    play.setBackground( getResources().getDrawable(R.drawable.play));
+                                    play.setBackground( getResources().getDrawable(R.drawable.music_play_button));
                                 }
 
                                 // check mute status
                                 if(ms.getIsMuted()) {
-                                    mute.setBackground( getResources().getDrawable(R.drawable.mute_on));
+                                    mute.setBackground( getResources().getDrawable(R.drawable.music_mute));
                                 } else {
-                                    mute.setBackground( getResources().getDrawable(R.drawable.mute_off));
+                                    mute.setBackground( getResources().getDrawable(R.drawable.music_volume_up));
                                 }
 
-                                if(!isVolumeBarMoving)
+                                if(!isVolumeBarMoving) {
                                     volumeBar.setProgress(ms.getVolumeLevel());
+                                    volumeBar.setSecondaryProgress(ms.getPosition());
+                                }
                             }
                         } catch(Exception e) {
                             e.printStackTrace();

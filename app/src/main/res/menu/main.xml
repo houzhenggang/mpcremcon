@@ -3,23 +3,13 @@
     tools:context=".Main" >
     <item android:id="@+id/action_settings"
         android:title="@string/action_settings"
-        android:icon="@android:drawable/ic_menu_preferences"
+        android:icon="@drawable/arrows_hamburger_2"
         android:orderInCategory="100"
         android:showAsAction="always" />
 
     <item android:id="@+id/action_close_mpc"
         android:title="@string/action_close_player"
-        android:orderInCategory="100"
-        android:showAsAction="ifRoom" />
-
-    <!--
-    <item android:id="@+id/action_mediaBrowser"
-        android:title="@string/action_mediaBrowser"
-        android:orderInCategory="100"
-        android:showAsAction="ifRoom" />
-    -->
-    <item android:id="@+id/action_exit"
-        android:title="@string/action_exit"
+        android:icon="@drawable/arrows_circle_remove"
         android:orderInCategory="100"
         android:showAsAction="ifRoom" />
 

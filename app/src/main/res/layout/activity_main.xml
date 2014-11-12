@@ -1,159 +1,203 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v4.widget.DrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context=".Main"
+    android:id="@+id/drawer_layout"
     android:background="@drawable/background">
 
-
-    <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/bottom_margin"
-        android:gravity="bottom"
-        android:baselineAligned="false"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:id="@+id/linearLayout2">
-
-        <!-- Seek bar and time markers -->
-        <SeekBar
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/timeSeekBar"
-            android:layout_below="@+id/bStop"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentStart="true"
-            android:layout_marginLeft="@dimen/bottom_margin"
-            android:layout_marginRight="@dimen/bottom_margin"
-            android:progress="0" />
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_alignParentEnd="true"
-            android:id="@+id/linearLayout">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="00:00"
-                android:id="@+id/tvCurrentTime"
-                android:layout_centerVertical="true"
-                android:layout_alignParentStart="true"
-                android:textColor="@android:color/black"
-                android:textIsSelectable="false"
-                android:textSize="@dimen/text_size"
-                android:layout_marginLeft="@dimen/text_margin" />
-
-            <TextView
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:text="00:00"
-                android:id="@+id/tvFullTime"
-                android:singleLine="true"
-                android:gravity="right"
-                android:layout_centerVertical="true"
-                android:autoText="false"
-                android:textColor="@android:color/black"
-                android:textSize="@dimen/text_size"
-                android:layout_marginRight="@dimen/text_margin" />
-        </LinearLayout>
-
-        <!-- Bottom buttons -->
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/bottom_margin"
-            android:gravity="bottom"
-            android:layout_gravity="center"
-            android:baselineAligned="false"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentEnd="true">
-
-            <ImageButton
-                android:layout_width="@dimen/button_size"
-                android:layout_height="@dimen/button_size"
-                android:id="@+id/ibFullscreen"
-                android:layout_centerHorizontal="true"
-                android:clickable="true"
-                android:adjustViewBounds="false"
-                android:cropToPadding="false"
-                android:background="@drawable/fullscreen" />
-
-            <ImageButton
-                android:layout_width="@dimen/button_size"
-                android:layout_height="@dimen/button_size"
-                android:id="@+id/ibPrev"
-                android:layout_centerHorizontal="true"
-                android:background="@drawable/prev"
-                android:clickable="true" />
-
-            <ImageButton
-                android:layout_width="@dimen/button_size"
-                android:layout_height="@dimen/button_size"
-                android:id="@+id/ibPlay"
-                android:layout_centerHorizontal="true"
-                android:background="@drawable/play"
-                android:clickable="false" />
-
-            <ImageButton
-                android:layout_width="@dimen/button_size"
-                android:layout_height="@dimen/button_size"
-                android:id="@+id/ibStop"
-                android:layout_centerHorizontal="true"
-                android:background="@drawable/stop" />
-
-            <ImageButton
-                android:layout_width="@dimen/button_size"
-                android:layout_height="@dimen/button_size"
-                android:id="@+id/ibNext"
-                android:layout_centerHorizontal="true"
-                android:background="@drawable/next"
-                android:clickable="true" />
-
-            <ImageButton
-                android:layout_width="@dimen/button_size"
-                android:layout_height="@dimen/button_size"
-                android:id="@+id/ibMute"
-                android:layout_centerHorizontal="true"
-                android:background="@drawable/mute_on"
-                android:clickable="true" />
-
-            <SeekBar
-                android:layout_width="@dimen/max_volume_width"
-                android:layout_height="wrap_content"
-                android:maxWidth="@dimen/max_volume_width"
-                android:id="@+id/volumeBar"
-                android:layout_centerHorizontal="true"
-                android:layout_gravity="center_vertical|right"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentStart="true"
-                android:layout_marginLeft="25dp"
-                android:progress="0" />
-        </LinearLayout>
-    </LinearLayout>
-
-    <ImageView
+    <!-- The main content view -->
+    <RelativeLayout
+        android:id="@+id/content_frame"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:id="@+id/snapshot"
-        android:layout_centerHorizontal="true"
-        android:layout_alignParentTop="true"
-        android:layout_above="@+id/linearLayout2"
-        android:layout_marginLeft="@dimen/bottom_margin"
-        android:layout_marginTop="@dimen/bottom_margin"
-        android:layout_marginRight="@dimen/bottom_margin"
-        android:layout_marginBottom="@dimen/bottom_margin"
-        android:layout_margin="@dimen/bottom_margin"
-        android:adjustViewBounds="false" />
+        android:orientation="vertical"
+        android:baselineAligned="false">
 
-</RelativeLayout>
+        <!-- Video snapshot -->
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/snapshot"
+            android:adjustViewBounds="false"
+            android:layout_gravity="top"
+            android:contentDescription="@string/snapshot"
+            android:layout_above="@+id/linearLayout2"
+            android:scaleType="centerCrop" />
+
+        <!-- navigation buttons -->
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:gravity="bottom"
+            android:baselineAligned="false"
+            android:id="@+id/linearLayout2"
+            android:layout_gravity="bottom"
+            android:layout_alignParentEnd="false"
+            android:layout_alignParentBottom="true"
+            android:alpha="1"
+            android:background="#6fffffff"
+            android:paddingTop="@dimen/bottom_margin">
+
+            <!-- Seek bar and time markers -->
+            <SeekBar
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/timeSeekBar"
+                android:layout_below="@+id/bStop"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentStart="true"
+                android:layout_marginRight="@dimen/bottom_margin"
+                android:progress="30"
+                android:thumb="@drawable/seekbar_thumb_white"
+                android:progressDrawable="@drawable/seekbar_progress"
+                android:mirrorForRtl="false"
+                android:layout_marginLeft="@dimen/bottom_margin"
+                android:indeterminate="false"
+                android:maxHeight="@dimen/seekbar_height"
+                android:minHeight="@dimen/seekbar_height" />
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_alignParentEnd="true"
+                android:id="@+id/linearLayout"
+                android:alpha="1">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="00:00"
+                    android:id="@+id/tvCurrentTime"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentStart="true"
+                    android:textColor="@android:color/black"
+                    android:textIsSelectable="false"
+                    android:textSize="@dimen/text_size"
+                    android:layout_marginLeft="@dimen/text_margin"
+                    android:fontFamily="@string/custom_font"
+                    android:layout_marginTop="@dimen/seekbar_text_margin" />
+
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:text="00:00"
+                    android:id="@+id/tvFullTime"
+                    android:singleLine="true"
+                    android:gravity="right"
+                    android:layout_centerVertical="true"
+                    android:autoText="false"
+                    android:textColor="@android:color/black"
+                    android:textSize="@dimen/text_size"
+                    android:layout_marginRight="@dimen/text_margin"
+                    android:fontFamily="@string/custom_font"
+                    android:layout_marginTop="@dimen/seekbar_text_margin" />
+            </LinearLayout>
+
+            <!-- Bottom buttons -->
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/bottom_margin"
+                android:gravity="bottom"
+                android:layout_gravity="center"
+                android:baselineAligned="false"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentEnd="true"
+                android:alpha="1">
+
+                <ImageButton
+                    android:layout_width="@dimen/button_size_arrows"
+                    android:layout_height="@dimen/button_size_arrows"
+                    android:id="@+id/ibFullscreen"
+                    android:layout_centerHorizontal="true"
+                    android:clickable="true"
+                    android:adjustViewBounds="false"
+                    android:cropToPadding="false"
+                    android:background="@drawable/arrows_expand"
+                    android:layout_margin="@dimen/img_margin"
+                    android:layout_gravity="center" />
+
+                <ImageButton
+                    android:layout_width="@dimen/button_size"
+                    android:layout_height="@dimen/button_size"
+                    android:id="@+id/ibPrev"
+                    android:layout_centerHorizontal="true"
+                    android:background="@drawable/music_rewind_button"
+                    android:clickable="true"
+                    android:layout_margin="@dimen/img_margin" />
+
+                <ImageButton
+                    android:layout_width="@dimen/button_size"
+                    android:layout_height="@dimen/button_size"
+                    android:id="@+id/ibPlay"
+                    android:layout_centerHorizontal="true"
+                    android:background="@drawable/music_play_button"
+                    android:clickable="false"
+                    android:layout_margin="@dimen/img_margin" />
+
+                <ImageButton
+                    android:layout_width="@dimen/button_size"
+                    android:layout_height="@dimen/button_size"
+                    android:id="@+id/ibStop"
+                    android:layout_centerHorizontal="true"
+                    android:background="@drawable/music_stop_button"
+                    android:layout_margin="@dimen/img_margin" />
+
+                <ImageButton
+                    android:layout_width="@dimen/button_size"
+                    android:layout_height="@dimen/button_size"
+                    android:id="@+id/ibNext"
+                    android:layout_centerHorizontal="true"
+                    android:background="@drawable/music_fastforward_button"
+                    android:clickable="true"
+                    android:layout_margin="@dimen/img_margin" />
+
+                <ImageButton
+                    android:layout_width="@dimen/button_size"
+                    android:layout_height="@dimen/button_size"
+                    android:id="@+id/ibMute"
+                    android:layout_centerHorizontal="true"
+                    android:background="@drawable/music_volume_up"
+                    android:clickable="true"
+                    android:layout_margin="@dimen/img_margin" />
+
+                <SeekBar
+                    android:layout_width="@dimen/max_volume_width"
+                    android:layout_height="wrap_content"
+                    android:maxWidth="@dimen/max_volume_width"
+                    android:id="@+id/volumeBar"
+                    android:layout_centerHorizontal="true"
+                    android:layout_gravity="center_vertical|right"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_marginLeft="25dp"
+                    android:thumb="@drawable/seekbar_thumb_white"
+                    android:minHeight="@dimen/seekbar_height"
+                    android:maxHeight="@dimen/seekbar_height"
+                    android:progress="50"
+                    android:secondaryProgress="25"
+                    android:clickable="true"
+                    android:progressDrawable="@drawable/seekbar_progress" />
+            </LinearLayout>
+        </LinearLayout>
+
+    </RelativeLayout>
+
+    <!-- The navigation drawer -->
+    <ListView android:id="@+id/left_drawer"
+        android:layout_width="320dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:choiceMode="singleChoice"
+        android:divider="@android:color/transparent"
+        android:dividerHeight="0dp"
+        android:background="#fffcfcfc"
+        android:fontFamily="@string/custom_font" />
+
+</android.support.v4.widget.DrawerLayout>

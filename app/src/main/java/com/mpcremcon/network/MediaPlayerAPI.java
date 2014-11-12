@@ -85,7 +85,10 @@ public class MediaPlayerAPI {
             String durStr = doc.select("#durationstring").text();
 
             int volume = Integer.valueOf(doc.select("#volumelevel").text());
-            Boolean isMuted = Boolean.valueOf(doc.select("#muted").text());
+
+            Boolean isMuted;
+            if(doc.select("#muted").text().equals("0")) isMuted = false;
+            else isMuted = true;
 
             int t = Integer.valueOf(doc.select("#state").text());
             Boolean playState;

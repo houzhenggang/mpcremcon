@@ -5,8 +5,6 @@ import android.content.ServiceConnection;
 import android.os.Handler;
 import android.os.IBinder;
 
-import com.mpcremcon.ui.FileBrowserActivity;
-
 /**
  * Main service connection class
  *

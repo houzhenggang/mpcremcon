@@ -3,9 +3,17 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="bottom_margin">18dp</dimen>
-    <dimen name="button_size">60dp</dimen>
+
+    <dimen name="button_size">50dp</dimen>
+    <dimen name="button_size_arrows">42dp</dimen>
+
     <dimen name="max_volume_width">150dp</dimen>
     <dimen name="text_size">20dp</dimen>
     <dimen name="text_margin">20dp</dimen>
     <dimen name="about_top_margin">30dp</dimen>
+
+    <dimen name="img_margin">8dp</dimen>
+
+    <dimen name="seekbar_text_margin">5dp</dimen>
+    <dimen name="seekbar_height">1dp</dimen>
 </resources>

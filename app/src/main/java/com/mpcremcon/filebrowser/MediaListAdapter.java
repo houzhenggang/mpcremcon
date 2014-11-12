@@ -30,8 +30,6 @@ public class MediaListAdapter extends ArrayAdapter<MediaEntity> {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-
-
         ImageView imageView;
         TextView textView;
 
@@ -51,13 +49,13 @@ public class MediaListAdapter extends ArrayAdapter<MediaEntity> {
         MediaEntity e = getItem(position);
 
         if(e.getName().equals("..")) {
-            imageView.setImageResource(R.drawable.folderup);
+            imageView.setImageResource(R.drawable.basic_elaboration_folder_previous);
         } else if(e.getMediaType() == MediaFormats.Type.DIR) {
-            imageView.setImageResource(R.drawable.folder);
+            imageView.setImageResource(R.drawable.basic_elaboration_folder_document);
         } else if(e.getMediaType() == MediaFormats.Type.VIDEO) {
-            imageView.setImageResource(R.drawable.videofile);
+            imageView.setImageResource(R.drawable.basic_elaboration_document_picture);
         } else if(e.getMediaType() == MediaFormats.Type.AUDIO) {
-            imageView.setImageResource(R.drawable.soundfile);
+            imageView.setImageResource(R.drawable.basic_elaboration_document_note);
         }
 
         textView.setText(e.getName());

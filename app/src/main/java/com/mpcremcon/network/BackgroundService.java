@@ -11,7 +11,6 @@ import android.util.Log;
 
 import com.mpcremcon.filebrowser.MediaEntityList;
 import com.mpcremcon.ui.MainActivity;
-import com.mpcremcon.ui.FileBrowserActivity;
 
 /**
  * Main service, which runs tasks in background.
@@ -168,7 +167,7 @@ public class BackgroundService extends Service {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                FileBrowserActivity.IS_DATA_UPDATING = true;
+                MainActivity.IS_DATA_UPDATING = true;
                 MediaEntityList m = mediaPlayerAPI.getBrowser(path);
                 Message msg = new Message();
 
@@ -180,7 +179,7 @@ public class BackgroundService extends Service {
                 } else {
                     handler.sendEmptyMessage(Commands.ERROR);
                 }
-                FileBrowserActivity.IS_DATA_UPDATING = false;
+                MainActivity.IS_DATA_UPDATING = false;
             }
         }).start();
     }

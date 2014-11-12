@@ -12,10 +12,6 @@
         android:id="@+id/content_frame"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:paddingLeft="@dimen/activity_horizontal_margin"
-        android:paddingRight="@dimen/activity_horizontal_margin"
-        android:paddingTop="@dimen/activity_vertical_margin"
-        android:paddingBottom="@dimen/activity_vertical_margin"
         android:orientation="vertical"
         android:baselineAligned="false">
 
@@ -24,28 +20,26 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/snapshot"
-            android:layout_marginLeft="@dimen/bottom_margin"
-            android:layout_marginTop="@dimen/bottom_margin"
-            android:layout_marginRight="@dimen/bottom_margin"
-            android:layout_marginBottom="@dimen/bottom_margin"
-            android:layout_margin="@dimen/bottom_margin"
             android:adjustViewBounds="false"
             android:layout_gravity="top"
             android:contentDescription="@string/snapshot"
-            android:layout_above="@+id/linearLayout2" />
+            android:layout_above="@+id/linearLayout2"
+            android:scaleType="centerCrop" />
 
         <!-- navigation buttons -->
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/bottom_margin"
             android:gravity="bottom"
             android:baselineAligned="false"
             android:id="@+id/linearLayout2"
             android:layout_gravity="bottom"
             android:layout_alignParentEnd="false"
-            android:layout_alignParentBottom="true">
+            android:layout_alignParentBottom="true"
+            android:alpha="1"
+            android:background="#6fffffff"
+            android:paddingTop="@dimen/bottom_margin">
 
             <!-- Seek bar and time markers -->
             <SeekBar
@@ -57,7 +51,11 @@
                 android:layout_alignParentStart="true"
                 android:layout_marginLeft="@dimen/bottom_margin"
                 android:layout_marginRight="@dimen/bottom_margin"
-                android:progress="0" />
+                android:progress="50"
+                android:progressDrawable="@drawable/seekbar_progress"
+                android:thumb="@drawable/seekbar_thumb_white"
+                android:minHeight="@dimen/seekbar_height"
+                android:maxHeight="@dimen/seekbar_height" />
 
             <LinearLayout
                 android:orientation="horizontal"
@@ -65,7 +63,8 @@
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_alignParentEnd="true"
-                android:id="@+id/linearLayout">
+                android:id="@+id/linearLayout"
+                android:alpha="1">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -77,7 +76,9 @@
                     android:textColor="@android:color/black"
                     android:textIsSelectable="false"
                     android:textSize="@dimen/text_size"
-                    android:layout_marginLeft="@dimen/text_margin" />
+                    android:layout_marginLeft="@dimen/text_margin"
+                    android:fontFamily="@string/custom_font"
+                    android:layout_marginTop="@dimen/seekbar_text_margin" />
 
                 <TextView
                     android:layout_width="fill_parent"
@@ -90,7 +91,9 @@
                     android:autoText="false"
                     android:textColor="@android:color/black"
                     android:textSize="@dimen/text_size"
-                    android:layout_marginRight="@dimen/text_margin" />
+                    android:layout_marginRight="@dimen/text_margin"
+                    android:fontFamily="@string/custom_font"
+                    android:layout_marginTop="@dimen/seekbar_text_margin" />
             </LinearLayout>
 
             <!-- Bottom buttons -->
@@ -103,56 +106,64 @@
                 android:layout_gravity="center"
                 android:baselineAligned="false"
                 android:layout_alignParentBottom="true"
-                android:layout_alignParentEnd="true">
+                android:layout_alignParentEnd="true"
+                android:alpha="1">
 
                 <ImageButton
-                    android:layout_width="@dimen/button_size"
-                    android:layout_height="@dimen/button_size"
+                    android:layout_width="@dimen/button_size_arrows"
+                    android:layout_height="@dimen/button_size_arrows"
                     android:id="@+id/ibFullscreen"
                     android:layout_centerHorizontal="true"
                     android:clickable="true"
                     android:adjustViewBounds="false"
                     android:cropToPadding="false"
-                    android:background="@drawable/fullscreen" />
+                    android:background="@drawable/arrows_expand"
+                    android:layout_margin="@dimen/img_margin"
+                    android:layout_gravity="center" />
 
                 <ImageButton
                     android:layout_width="@dimen/button_size"
                     android:layout_height="@dimen/button_size"
                     android:id="@+id/ibPrev"
                     android:layout_centerHorizontal="true"
-                    android:background="@drawable/prev"
-                    android:clickable="true" />
+                    android:background="@drawable/music_rewind_button"
+                    android:clickable="true"
+                    android:layout_margin="@dimen/img_margin" />
 
                 <ImageButton
                     android:layout_width="@dimen/button_size"
                     android:layout_height="@dimen/button_size"
                     android:id="@+id/ibPlay"
                     android:layout_centerHorizontal="true"
-                    android:background="@drawable/play"
-                    android:clickable="false" />
+                    android:background="@drawable/music_play_button"
+                    android:clickable="false"
+                    android:layout_margin="@dimen/img_margin" />
 
                 <ImageButton
                     android:layout_width="@dimen/button_size"
                     android:layout_height="@dimen/button_size"
                     android:id="@+id/ibStop"
                     android:layout_centerHorizontal="true"
-                    android:background="@drawable/stop" />
+                    android:background="@drawable/music_stop_button"
+                    android:layout_margin="@dimen/img_margin" />
 
                 <ImageButton
                     android:layout_width="@dimen/button_size"
                     android:layout_height="@dimen/button_size"
                     android:id="@+id/ibNext"
                     android:layout_centerHorizontal="true"
-                    android:background="@drawable/next"
-                    android:clickable="true" />
+                    android:background="@drawable/music_fastforward_button"
+                    android:clickable="true"
+                    android:layout_margin="@dimen/img_margin" />
 
                 <ImageButton
                     android:layout_width="@dimen/button_size"
                     android:layout_height="@dimen/button_size"
                     android:id="@+id/ibMute"
                     android:layout_centerHorizontal="true"
-                    android:background="@drawable/mute_on"
-                    android:clickable="true" />
+                    android:background="@drawable/music_volume_up"
+                    android:clickable="true"
+                    android:layout_margin="@dimen/img_margin" />
 
                 <SeekBar
                     android:layout_width="@dimen/max_volume_width"
@@ -164,7 +175,11 @@
                     android:layout_alignParentEnd="true"
                     android:layout_alignParentStart="true"
                     android:layout_marginLeft="25dp"
-                    android:progress="0" />
+                    android:progress="0"
+                    android:progressDrawable="@drawable/seekbar_progress"
+                    android:thumb="@drawable/seekbar_thumb_white"
+                    android:maxHeight="@dimen/seekbar_height"
+                    android:minHeight="@dimen/seekbar_height" />
             </LinearLayout>
         </LinearLayout>
 
@@ -178,6 +193,7 @@
         android:choiceMode="singleChoice"
         android:divider="@android:color/transparent"
         android:dividerHeight="0dp"
-        android:background="#fffcfcfc"/>
+        android:background="#fffcfcfc"
+        android:fontFamily="@string/custom_font" />
 
 </android.support.v4.widget.DrawerLayout>
